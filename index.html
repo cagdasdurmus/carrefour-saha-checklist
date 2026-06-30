@@ -1,644 +1,373 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0f172a" />
-  <title>Carrefour Ziyaret Checklist</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <style> body { -webkit-tap-highlight-color: transparent; } </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#0f172a" />
+<title>Carrefour Ziyaret Checklist</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>" />
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f1f5f9;color:#0f172a}
+  .hdr{position:sticky;top:0;z-index:10;background:#0f172a;color:#fff;padding:14px 16px 12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+  .hdr-top{display:flex;justify-content:space-between;align-items:center}
+  .hdr h1{font-size:16px;margin:0;font-weight:700}
+  .hdr p{margin:1px 0 0;font-size:11px;color:#94a3b8}
+  .pct{font-size:22px;font-weight:700;color:#fbbf24}
+  .bar{margin-top:8px;height:8px;background:#334155;border-radius:99px;overflow:hidden}
+  .bar-fill{height:100%;background:#fbbf24;width:0;transition:width .25s}
+  main{max-width:480px;margin:0 auto;padding:14px 12px 120px}
+  .section{background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden;margin-bottom:8px}
+  .sec-head{display:flex;align-items:center;justify-content:space-between;width:100%;padding:15px 16px;border:0;background:none;cursor:pointer;text-align:left}
+  .sec-head:active{background:#f8fafc}
+  .sec-left{display:flex;align-items:center;gap:12px}
+  .sec-icon{font-size:20px}
+  .sec-title{font-size:14px;font-weight:700;color:#1e293b;display:block}
+  .sec-badge{font-size:11px;color:#94a3b8;display:block;margin-top:1px}
+  .sec-right{display:flex;align-items:center;gap:8px}
+  .sec-ok{color:#10b981;font-size:18px}
+  .chev{color:#94a3b8;transition:transform .2s}
+  .open .chev{transform:rotate(180deg)}
+  .sec-body{display:none;padding:0 16px 16px;border-top:1px solid #f1f5f9}
+  .open .sec-body{display:block}
+  .note{font-size:11px;color:#b45309;background:#fffbeb;border-radius:8px;padding:8px 12px;margin:12px 0 0}
+  .field{padding:12px 0;border-top:1px solid #f8fafc}
+  .field:first-child{border-top:0}
+  .field>label{display:block;font-size:14px;font-weight:500;color:#334155;margin-bottom:8px}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .row.tight{gap:6px}
+  button.opt{flex:1;min-width:64px;padding:12px 8px;border-radius:12px;font-size:14px;font-weight:600;border:1px solid #e2e8f0;background:#fff;color:#475569;cursor:pointer}
+  button.opt:active{background:#f8fafc}
+  button.opt.on{color:#fff}
+  .seg.on{background:#f59e0b;border-color:#f59e0b}
+  .tgl-yes.on{background:#10b981;border-color:#10b981}
+  .tgl-no.on{background:#e2e8f0;border-color:#cbd5e1;color:#475569}
+  .chip{flex:0 0 auto;min-width:0;border-radius:99px;padding:9px 14px;font-weight:500}
+  .chip.on{background:#1e293b;border-color:#1e293b;color:#fff}
+  .rate.on{border-color:transparent}
+  .rate-iyi.on{background:#10b981}.rate-orta.on{background:#f59e0b}.rate-kotu.on{background:#f43f5e}
+  .wt{flex:1;padding:10px 4px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid #e2e8f0;background:#fff;color:#64748b;cursor:pointer}
+  .wt.on{background:#6366f1;border-color:#6366f1;color:#fff}
+  .wt.on.yok{background:#e2e8f0;border-color:#cbd5e1;color:#475569}
+  .step{display:flex;align-items:center;gap:12px}
+  .step button{width:48px;height:48px;border-radius:12px;border:0;font-size:24px;font-weight:700;cursor:pointer}
+  .step .minus{background:#f1f5f9;color:#334155}
+  .step .plus{background:#1e293b;color:#fff}
+  .step .num{width:56px;text-align:center;font-size:20px;font-weight:700}
+  .stars{display:flex;gap:4px}
+  .stars button{background:none;border:0;font-size:30px;line-height:1;cursor:pointer;color:#e2e8f0;padding:0}
+  .stars button.on{color:#fbbf24}
+  select.rng,input.txt,textarea.nte{width:100%;padding:12px 14px;border-radius:12px;font-size:14px;border:1px solid #e2e8f0;background:#fff;color:#1e293b;font-family:inherit}
+  select.rng{font-weight:600;-webkit-appearance:none;appearance:none}
+  select.rng.set{background:#fffbeb;border-color:#fbbf24;color:#92400e}
+  textarea.nte{resize:none}
+  input.txt:focus,textarea.nte:focus,select.rng:focus{outline:none;border-color:#fbbf24}
+  .geo-btn{width:100%;padding:12px;border-radius:12px;border:0;font-size:14px;font-weight:700;color:#fff;background:#1e293b;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+  .geo-btn.done{background:#10b981}.geo-btn.err{background:#f43f5e}
+  .geo-msg{margin:8px 0 0;font-size:11px;color:#64748b}.geo-msg.err{color:#e11d48}
+  .photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  .photo{position:relative;aspect-ratio:1;border-radius:12px;border:2px dashed #e2e8f0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;padding:0}
+  .photo.has{border-color:#34d399;border-style:solid}
+  .photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .photo .pl{font-size:24px}.photo .cap{font-size:10px;color:#64748b;margin-top:4px;text-align:center;padding:0 2px;line-height:1.1}
+  .foot{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0}
+  .foot-in{max-width:480px;margin:0 auto;padding:12px 16px;display:flex;gap:12px}
+  .foot-err{max-width:480px;margin:0 auto;font-size:11px;color:#e11d48;background:#fff1f2;padding:8px 16px}
+  .btn-draft{padding:12px 16px;border-radius:12px;border:0;background:#f1f5f9;color:#334155;font-size:14px;font-weight:600;cursor:pointer}
+  .btn-send{flex:1;padding:12px;border-radius:12px;border:0;background:#10b981;color:#fff;font-size:14px;font-weight:700;cursor:pointer}
+  .btn-send:disabled,.btn-draft:disabled{opacity:.6}
+  .modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;padding:16px}
+  @media(min-width:640px){.modal{align-items:center}}
+  .modal-box{background:#fff;border-radius:16px;width:100%;max-width:360px;padding:20px}
+  .modal-box h3{margin:0;font-size:16px;color:#1e293b}
+  .modal-box .sub{font-size:12px;color:#64748b;margin:2px 0 0}
+  .modal-box ol{list-style:none;padding:0;margin:16px 0 0}
+  .modal-box li{display:flex;gap:12px;font-size:14px;color:#334155;margin-bottom:10px}
+  .modal-box .n{flex:0 0 auto;width:24px;height:24px;border-radius:99px;background:#1e293b;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .modal-acts{display:flex;gap:8px;margin-top:16px}
+  .done-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:#f8fafc}
+  .done-screen .em{font-size:48px;margin-bottom:12px}
+  .done-screen h2{margin:0;font-size:20px;color:#1e293b}
+  .done-screen p{color:#64748b;font-size:14px;margin:4px 0 0}
+  .hidden{display:none!important}
+</style>
 </head>
 <body>
-  <div id="root" style="font-family: system-ui, -apple-system, sans-serif;">
-    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:#64748b;">Yükleniyor…</div>
-  </div>
+<div id="app"></div>
 
-  <script type="text/babel" data-presets="react">
-const { useState, useMemo, useRef } = React;
+<script>
+"use strict";
+var SUBMIT_URL="https://script.google.com/macros/s/AKfycbzyVd8avpnUTA02atCl4EmoXnp951nqcYv404_mOP7JQh_TqPScjGrA42RqvImf4FM/exec";
+var TOKEN="";
 
-// ---------- Webhook ayarları ----------
-const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbzyVd8avpnUTA02atCl4EmoXnp951nqcYv404_mOP7JQh_TqPScjGrA42RqvImf4FM/exec";
-const TOKEN = "";
-
-// ---------- Konfigürasyon ----------
-const SECTIONS = [
-  {
-    id: "genel",
-    title: "Genel Bilgiler",
-    icon: "🏪",
-    fields: [
-      { key: "magazaAdi", label: "Mağaza adı", type: "text", placeholder: "Örn. Carrefour Bağdat Cd." },
-      { key: "magazaKodu", label: "Mağaza kodu", type: "text", placeholder: "Opsiyonel" },
-      { key: "geo", label: "Konum", type: "geo" },
-      { key: "ilIlce", label: "İl / İlçe", type: "text", placeholder: "Konumdan otomatik / manuel" },
-      { key: "ziyaretTipi", label: "Ziyaret tipi", type: "segmented", options: ["Kendi noktamız", "Rakip"] },
-      { key: "konsept", label: "Konsept", type: "select", options: ["Hard-discount", "Süpermarket", "Hipermarket", "Mahalle marketi", "Premium / Gurme"] },
-      { key: "acilisYili", label: "Açılış yılı", type: "select", options: ["<2000", "2000-2010", "2011-2018", "2019-2023", "2024+"] },
-      { key: "renovasyon", label: "Son renovasyon", type: "select", options: ["Hiç / Bilinmiyor", "5+ yıl önce", "Son 5 yıl", "Son 1 yıl"] },
-      { key: "toplamAlan", label: "Toplam alan (m²)", type: "segmented", options: ["<150", "150-400", "400-1000", "1000-2500", "2500-4000", "4000+"] },
-      { key: "satisAlani", label: "Satış alanı (m²)", type: "segmented", options: ["<150", "150-400", "400-1000", "1000-2500", "2500-4000", "4000+"] },
-      { key: "katSayisi", label: "Kat sayısı", type: "stepper", min: 1, max: 5 },
-      { key: "otopark", label: "Otopark", type: "toggle" },
-      { key: "hizmetliReyonlar", label: "Hizmetli reyonlar", type: "chips", options: ["Açık şarküteri", "Balık reyonu", "Fırın (in-store)", "Açık kuruyemiş", "Kasap"] },
-      { key: "donukDolapSayi", label: "Donuk dolap sayısı", type: "stepper", min: 0, max: 80 },
-      { key: "donukDolapMetre", label: "Donuk dolap metresi", type: "segmented", options: ["<5m", "5-15m", "15-30m", "30-60m", "60m+"] },
-    ],
-  },
-  {
-    id: "musteri",
-    title: "Müşteri Profili",
-    icon: "👥",
-    fields: [
-      { key: "gelir", label: "Gelir seviyesi", type: "segmented", options: ["Düşük", "Orta", "Üst"] },
-      { key: "konutOfis", label: "Konut / Ofis ağırlığı", type: "segmented", options: ["Konut", "Karma", "Ofis"] },
-      { key: "yayaTrafigi", label: "Yaya trafiği", type: "segmented", options: ["Az", "Orta", "Yoğun"] },
-      { key: "aracTrafigi", label: "Araç trafiği", type: "segmented", options: ["Az", "Orta", "Yoğun"] },
-      { key: "konum", label: "Konum / çevre", type: "chips", options: ["Cadde", "AVM", "Mahalle arası", "Sanayi", "Okul yakını", "Hastane yakını", "Ulaşım merkezi"] },
-      { key: "premiumMusteri", label: "Premium müşteri potansiyeli", type: "toggle" },
-      { key: "geceSatis", label: "Gece satış potansiyeli", type: "toggle" },
-    ],
-  },
-  {
-    id: "operasyon",
-    title: "Operasyon",
-    icon: "🛒",
-    fields: [
-      { key: "kasaSayisi", label: "Kasa sayısı", type: "stepper", min: 0, max: 80 },
-      { key: "selfCheckout", label: "Self-checkout", type: "toggle" },
-      { key: "sigaraKasasi", label: "Sigara kasası", type: "toggle" },
-      { key: "onlineHazirlama", label: "Online hazırlama alanı", type: "toggle" },
-      { key: "clickCollect", label: "Click & Collect", type: "toggle" },
-      { key: "onlineTeslimat", label: "Online teslimat", type: "toggle" },
-    ],
-  },
-  {
-    id: "performans",
-    title: "Performans (Tahmini)",
-    icon: "📊",
-    note: "Rakip mağazalarda gözleme dayalı tahmini aralık seçin.",
-    fields: [
-      { key: "gunlukMusteri", label: "Günlük müşteri", type: "select", options: ["<500", "500-1.500", "1.500-3.000", "3.000-6.000", "6.000-10.000", "10.000+"] },
-      { key: "gunlukFis", label: "Günlük fiş", type: "select", options: ["<400", "400-1.200", "1.200-2.500", "2.500-5.000", "5.000-9.000", "9.000+"] },
-      { key: "ortSepet", label: "Ortalama sepet (₺)", type: "select", options: ["<150", "150-300", "300-600", "600-1.000", "1.000+"] },
-      { key: "gunlukCiro", label: "Günlük ciro (₺)", type: "select", options: ["<50K", "50-150K", "150-400K", "400K-1M", "1M-3M", "3M+"] },
-      { key: "yillikCiro", label: "Yıllık ciro (₺)", type: "select", options: ["<20M", "20-60M", "60-150M", "150-500M", "500M-1Mr", "1Mr+"] },
-    ],
-  },
-  {
-    id: "fiyat",
-    title: "Fiyat & Promosyon",
-    icon: "🏷️",
-    fields: [
-      { key: "fiyatUyum", label: "Raf ↔ kasa fiyat uyumu", type: "segmented", options: ["Uyumlu", "Farklı", "Bakılmadı"] },
-      { key: "promosyon", label: "Aktif promosyon", type: "toggle" },
-      { key: "promoTipi", label: "Promosyon tipi", type: "select", options: ["2 Al 1 Öde", "% İndirim", "Sepette indirim", "Kart / App özel", "Yok"] },
-      { key: "etiketDogruluk", label: "Etiket doğruluğu", type: "rating3" },
-    ],
-  },
-  {
-    id: "alkolAlan",
-    title: "Alkol Kategori Alanı",
-    icon: "🍷",
-    fields: [
-      { key: "kategoriAlani", label: "Toplam kategori alanı", type: "segmented", options: ["Küçük", "Orta", "Geniş", "Çok geniş"] },
-      { key: "sogukAlan", label: "Soğuk alan", type: "toggle" },
-      { key: "dolapSayisi", label: "Soğuk dolap sayısı", type: "stepper", min: 0, max: 60 },
-      { key: "sogukMetre", label: "Soğuk dolap metresi", type: "segmented", options: ["<3m", "3-8m", "8-20m", "20-40m", "40m+"] },
-      { key: "rafMetre", label: "Toplam raf metresi", type: "segmented", options: ["<5m", "5-15m", "15-30m", "30-60m", "60m+"] },
-      { key: "gondol", label: "Gondol / Ada teşhir", type: "toggle" },
-      { key: "premiumAlan", label: "Premium / özel konsept alan", type: "toggle" },
-    ],
-  },
-  {
-    id: "dagilim",
-    title: "Kategori Dağılımı",
-    icon: "🥃",
-    note: "Her tür için reyon ağırlığını seçin.",
-    fields: [
-      "Bira", "Şarap", "Rakı", "Viski", "Votka", "Cin", "Rom", "Tekila", "Likör", "RTD", "Mixer",
-    ].map((t) => ({ key: "d_" + t, label: t, type: "weight" })),
-  },
-  {
-    id: "vm",
-    title: "Görsel Merchandising",
-    icon: "✨",
-    fields: [
-      { key: "tabela", label: "Kategori tabelası", type: "rating3" },
-      { key: "aydinlatma", label: "Aydınlatma", type: "rating3" },
-      { key: "dekor", label: "Dekor", type: "rating3" },
-      { key: "posm", label: "POSM kullanımı", type: "rating3" },
-      { key: "kampanyaAlani", label: "Kampanya alanı", type: "rating3" },
-      { key: "navigasyon", label: "Navigasyon / yönlendirme", type: "rating3" },
-    ],
-  },
-  {
-    id: "rekabet",
-    title: "Rekabet (Yakında var mı?)",
-    icon: "⚔️",
-    fields: [
-      { key: "migros", label: "Migros", type: "toggle" },
-      { key: "macrocenter", label: "Macrocenter", type: "toggle" },
-      { key: "tekel", label: "Tekel bayi", type: "toggle" },
-      { key: "metro", label: "Metro", type: "toggle" },
-      { key: "digerZincir", label: "Diğer zincirler", type: "toggle" },
-      { key: "tehdit", label: "Genel tehdit skoru", type: "segmented", options: ["Düşük", "Orta", "Yüksek"] },
-    ],
-  },
-  {
-    id: "foto",
-    title: "Fotoğraflar",
-    icon: "📸",
-    note: "Dokun ve çek — opsiyonel.",
-    fields: [
-      "Dış cephe", "Giriş", "Genel görünüm", "Soğuk dolap", "Raflar",
-      "Premium alan", "Kampanya", "Fiyat etiketleri", "Kasa", "Çıkış",
-    ].map((t) => ({ key: "f_" + t, label: t, type: "photo" })),
-  },
-  {
-    id: "degerlendirme",
-    title: "Değerlendirme",
-    icon: "⭐",
-    fields: [
-      { key: "premiumAlgisi", label: "Premium algısı", type: "stars" },
-      { key: "okunabilirlik", label: "Kategori okunabilirliği", type: "stars" },
-      { key: "alanVerimliligi", label: "Alan verimliliği", type: "stars" },
-      { key: "sogukSunum", label: "Soğuk içki sunumu", type: "stars" },
-      { key: "genelPuan", label: "Genel puan", type: "stars" },
-      { key: "guclu", label: "Güçlü yönler", type: "note", placeholder: "Kısa not..." },
-      { key: "gelisim", label: "Gelişim alanları", type: "note", placeholder: "Kısa not..." },
-      { key: "notlar", label: "Ek notlar", type: "note", placeholder: "Opsiyonel..." },
-    ],
-  },
+var SECTIONS=[
+ {id:"genel",title:"Genel Bilgiler",icon:"🏪",fields:[
+   {key:"magazaAdi",label:"Mağaza adı",type:"text",ph:"Örn. Carrefour Bağdat Cd."},
+   {key:"magazaKodu",label:"Mağaza kodu",type:"text",ph:"Opsiyonel"},
+   {key:"geo",label:"Konum",type:"geo"},
+   {key:"ilIlce",label:"İl / İlçe",type:"text",ph:"Konumdan otomatik / manuel"},
+   {key:"ziyaretTipi",label:"Ziyaret tipi",type:"seg",opt:["Kendi noktamız","Rakip"]},
+   {key:"konsept",label:"Konsept",type:"sel",opt:["Hard-discount","Süpermarket","Hipermarket","Mahalle marketi","Premium / Gurme"]},
+   {key:"acilisYili",label:"Açılış yılı",type:"sel",opt:["<2000","2000-2010","2011-2018","2019-2023","2024+"]},
+   {key:"renovasyon",label:"Son renovasyon",type:"sel",opt:["Hiç / Bilinmiyor","5+ yıl önce","Son 5 yıl","Son 1 yıl"]},
+   {key:"toplamAlan",label:"Toplam alan (m²)",type:"seg",opt:["<150","150-400","400-1000","1000-2500","2500-4000","4000+"]},
+   {key:"satisAlani",label:"Satış alanı (m²)",type:"seg",opt:["<150","150-400","400-1000","1000-2500","2500-4000","4000+"]},
+   {key:"katSayisi",label:"Kat sayısı",type:"step",min:1,max:5},
+   {key:"otopark",label:"Otopark",type:"tgl"},
+   {key:"hizmetliReyonlar",label:"Hizmetli reyonlar",type:"chip",opt:["Açık şarküteri","Balık reyonu","Fırın (in-store)","Açık kuruyemiş","Kasap"]},
+   {key:"donukDolapSayi",label:"Donuk dolap sayısı",type:"step",min:0,max:80},
+   {key:"donukDolapMetre",label:"Donuk dolap metresi",type:"seg",opt:["<5m","5-15m","15-30m","30-60m","60m+"]}
+ ]},
+ {id:"musteri",title:"Müşteri Profili",icon:"👥",fields:[
+   {key:"gelir",label:"Gelir seviyesi",type:"seg",opt:["Düşük","Orta","Üst"]},
+   {key:"konutOfis",label:"Konut / Ofis ağırlığı",type:"seg",opt:["Konut","Karma","Ofis"]},
+   {key:"yayaTrafigi",label:"Yaya trafiği",type:"seg",opt:["Az","Orta","Yoğun"]},
+   {key:"aracTrafigi",label:"Araç trafiği",type:"seg",opt:["Az","Orta","Yoğun"]},
+   {key:"konum",label:"Konum / çevre",type:"chip",opt:["Cadde","AVM","Mahalle arası","Sanayi","Okul yakını","Hastane yakını","Ulaşım merkezi"]},
+   {key:"premiumMusteri",label:"Premium müşteri potansiyeli",type:"tgl"},
+   {key:"geceSatis",label:"Gece satış potansiyeli",type:"tgl"}
+ ]},
+ {id:"operasyon",title:"Operasyon",icon:"🛒",fields:[
+   {key:"kasaSayisi",label:"Kasa sayısı",type:"step",min:0,max:80},
+   {key:"selfCheckout",label:"Self-checkout",type:"tgl"},
+   {key:"sigaraKasasi",label:"Sigara kasası",type:"tgl"},
+   {key:"onlineHazirlama",label:"Online hazırlama alanı",type:"tgl"},
+   {key:"clickCollect",label:"Click & Collect",type:"tgl"},
+   {key:"onlineTeslimat",label:"Online teslimat",type:"tgl"}
+ ]},
+ {id:"performans",title:"Performans (Tahmini)",icon:"📊",note:"Rakip mağazalarda gözleme dayalı tahmini aralık seçin.",fields:[
+   {key:"gunlukMusteri",label:"Günlük müşteri",type:"sel",opt:["<500","500-1.500","1.500-3.000","3.000-6.000","6.000-10.000","10.000+"]},
+   {key:"gunlukFis",label:"Günlük fiş",type:"sel",opt:["<400","400-1.200","1.200-2.500","2.500-5.000","5.000-9.000","9.000+"]},
+   {key:"ortSepet",label:"Ortalama sepet (₺)",type:"sel",opt:["<150","150-300","300-600","600-1.000","1.000+"]},
+   {key:"gunlukCiro",label:"Günlük ciro (₺)",type:"sel",opt:["<50K","50-150K","150-400K","400K-1M","1M-3M","3M+"]},
+   {key:"yillikCiro",label:"Yıllık ciro (₺)",type:"sel",opt:["<20M","20-60M","60-150M","150-500M","500M-1Mr","1Mr+"]}
+ ]},
+ {id:"fiyat",title:"Fiyat & Promosyon",icon:"🏷️",fields:[
+   {key:"fiyatUyum",label:"Raf ↔ kasa fiyat uyumu",type:"seg",opt:["Uyumlu","Farklı","Bakılmadı"]},
+   {key:"promosyon",label:"Aktif promosyon",type:"tgl"},
+   {key:"promoTipi",label:"Promosyon tipi",type:"sel",opt:["2 Al 1 Öde","% İndirim","Sepette indirim","Kart / App özel","Yok"]},
+   {key:"etiketDogruluk",label:"Etiket doğruluğu",type:"rate"}
+ ]},
+ {id:"alkolAlan",title:"Alkol Kategori Alanı",icon:"🍷",fields:[
+   {key:"kategoriAlani",label:"Toplam kategori alanı",type:"seg",opt:["Küçük","Orta","Geniş","Çok geniş"]},
+   {key:"sogukAlan",label:"Soğuk alan",type:"tgl"},
+   {key:"dolapSayisi",label:"Soğuk dolap sayısı",type:"step",min:0,max:60},
+   {key:"sogukMetre",label:"Soğuk dolap metresi",type:"seg",opt:["<3m","3-8m","8-20m","20-40m","40m+"]},
+   {key:"rafMetre",label:"Toplam raf metresi",type:"seg",opt:["<5m","5-15m","15-30m","30-60m","60m+"]},
+   {key:"gondol",label:"Gondol / Ada teşhir",type:"tgl"},
+   {key:"premiumAlan",label:"Premium / özel konsept alan",type:"tgl"}
+ ]},
+ {id:"dagilim",title:"Kategori Dağılımı",icon:"🥃",note:"Her tür için reyon ağırlığını seçin.",fields:
+   ["Bira","Şarap","Rakı","Viski","Votka","Cin","Rom","Tekila","Likör","RTD","Mixer"].map(function(t){return{key:"d_"+t,label:t,type:"wt"}})
+ },
+ {id:"vm",title:"Görsel Merchandising",icon:"✨",fields:[
+   {key:"tabela",label:"Kategori tabelası",type:"rate"},
+   {key:"aydinlatma",label:"Aydınlatma",type:"rate"},
+   {key:"dekor",label:"Dekor",type:"rate"},
+   {key:"posm",label:"POSM kullanımı",type:"rate"},
+   {key:"kampanyaAlani",label:"Kampanya alanı",type:"rate"},
+   {key:"navigasyon",label:"Navigasyon / yönlendirme",type:"rate"}
+ ]},
+ {id:"rekabet",title:"Rekabet (Yakında var mı?)",icon:"⚔️",fields:[
+   {key:"migros",label:"Migros",type:"tgl"},
+   {key:"macrocenter",label:"Macrocenter",type:"tgl"},
+   {key:"tekel",label:"Tekel bayi",type:"tgl"},
+   {key:"metro",label:"Metro",type:"tgl"},
+   {key:"digerZincir",label:"Diğer zincirler",type:"tgl"},
+   {key:"tehdit",label:"Genel tehdit skoru",type:"seg",opt:["Düşük","Orta","Yüksek"]}
+ ]},
+ {id:"foto",title:"Fotoğraflar",icon:"📸",note:"Dokun ve çek — opsiyonel.",fields:
+   ["Dış cephe","Giriş","Genel görünüm","Soğuk dolap","Raflar","Premium alan","Kampanya","Fiyat etiketleri","Kasa","Çıkış"].map(function(t){return{key:"f_"+t,label:t,type:"photo"}})
+ },
+ {id:"degerlendirme",title:"Değerlendirme",icon:"⭐",fields:[
+   {key:"premiumAlgisi",label:"Premium algısı",type:"stars"},
+   {key:"okunabilirlik",label:"Kategori okunabilirliği",type:"stars"},
+   {key:"alanVerimliligi",label:"Alan verimliliği",type:"stars"},
+   {key:"sogukSunum",label:"Soğuk içki sunumu",type:"stars"},
+   {key:"genelPuan",label:"Genel puan",type:"stars"},
+   {key:"guclu",label:"Güçlü yönler",type:"note",ph:"Kısa not..."},
+   {key:"gelisim",label:"Gelişim alanları",type:"note",ph:"Kısa not..."},
+   {key:"notlar",label:"Ek notlar",type:"note",ph:"Opsiyonel..."}
+ ]}
 ];
 
-// ---------- UI Primitifleri ----------
-function Toggle({ value, onChange }) {
-  return (
-    <div className="flex gap-2">
-      {[["Var", true], ["Yok", false]].map(([lbl, val]) => (
-        <button key={lbl} onClick={() => onChange(val)}
-          className={`flex-1 py-3 rounded-xl text-sm font-semibold border transition ${
-            value === val ? (val ? "bg-emerald-500 border-emerald-500 text-white" : "bg-slate-200 border-slate-300 text-slate-700")
-              : "bg-white border-slate-200 text-slate-500 active:bg-slate-50"}`}>
-          {lbl}
-        </button>
-      ))}
-    </div>
-  );
+var FIELDS={};SECTIONS.forEach(function(s){s.fields.forEach(function(f){FIELDS[f.key]=f})});
+var data={}, open="genel", submitting=false;
+
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function filled(v){return v!==undefined&&v!==null&&v!==""&&!(Array.isArray(v)&&v.length===0)}
+
+function ctlHTML(f){
+  var v=data[f.key],h="";
+  if(f.type==="tgl"){
+    h+='<div class="row">';
+    h+='<button class="opt tgl-yes'+(v==="Var"?" on":"")+'" data-key="'+f.key+'" data-set="Var">Var</button>';
+    h+='<button class="opt tgl-no'+(v==="Yok"?" on":"")+'" data-key="'+f.key+'" data-set="Yok">Yok</button></div>';
+  }else if(f.type==="seg"){
+    h+='<div class="row">';f.opt.forEach(function(o){h+='<button class="opt seg'+(v===o?" on":"")+'" data-key="'+f.key+'" data-set="'+esc(o)+'">'+esc(o)+'</button>'});h+='</div>';
+  }else if(f.type==="chip"){
+    var arr=Array.isArray(v)?v:[];h+='<div class="row tight">';f.opt.forEach(function(o){h+='<button class="opt chip'+(arr.indexOf(o)>-1?" on":"")+'" data-key="'+f.key+'" data-chip="'+esc(o)+'">'+esc(o)+'</button>'});h+='</div>';
+  }else if(f.type==="rate"){
+    var rs=[["İyi","rate-iyi"],["Orta","rate-orta"],["Kötü","rate-kotu"]];h+='<div class="row">';rs.forEach(function(r){h+='<button class="opt rate '+r[1]+(v===r[0]?" on":"")+'" data-key="'+f.key+'" data-set="'+r[0]+'">'+r[0]+'</button>'});h+='</div>';
+  }else if(f.type==="wt"){
+    var ws=["Yok","Az","Orta","Geniş"];h+='<div class="row tight">';ws.forEach(function(o){h+='<button class="wt'+(v===o?" on"+(o==="Yok"?" yok":""):"")+'" data-key="'+f.key+'" data-set="'+esc(o)+'">'+esc(o)+'</button>'});h+='</div>';
+  }else if(f.type==="step"){
+    var n=(v===undefined?(f.min||0):v);
+    h+='<div class="step"><button class="minus" data-key="'+f.key+'" data-step="-1">−</button><span class="num">'+n+'</span><button class="plus" data-key="'+f.key+'" data-step="1">+</button></div>';
+  }else if(f.type==="stars"){
+    h+='<div class="stars">';for(var i=1;i<=5;i++){h+='<button data-key="'+f.key+'" data-set="'+i+'" class="'+(i<=(v||0)?"on":"")+'">★</button>'}h+='</div>';
+  }else if(f.type==="sel"){
+    h+='<select class="rng'+(filled(v)?" set":"")+'" data-key="'+f.key+'"><option value="">Seçin...</option>';f.opt.forEach(function(o){h+='<option'+(v===o?" selected":"")+'>'+esc(o)+'</option>'});h+='</select>';
+  }else if(f.type==="text"){
+    h+='<input class="txt" data-key="'+f.key+'" value="'+esc(v||"")+'" placeholder="'+esc(f.ph||"")+'">';
+  }else if(f.type==="note"){
+    h+='<textarea class="nte" rows="2" data-key="'+f.key+'" placeholder="'+esc(f.ph||"")+'">'+esc(v||"")+'</textarea>';
+  }else if(f.type==="geo"){
+    h+=geoHTML();
+  }
+  return h;
+}
+function geoHTML(){
+  var lat=data.lat,st=window._geoStatus||"idle",msg=window._geoMsg||"";
+  var cls=st==="done"?"done":st==="err"?"err":"";
+  var txt=st==="loading"?"Alınıyor...":st==="done"?"Konum Alındı":"Konumumu Al";
+  var sub=(lat||msg)?('<p class="geo-msg'+(st==="err"?" err":"")+'">'+(st==="done"&&lat?("📌 "+lat+", "+data.lon):esc(msg))+'</p>'):"";
+  return '<button class="geo-btn '+cls+'" id="geoBtn">📍 '+txt+'</button>'+sub;
 }
 
-function Segmented({ value, options, onChange }) {
-  return (
-    <div className="flex gap-2 flex-wrap">
-      {options.map((opt) => (
-        <button key={opt} onClick={() => onChange(opt)}
-          className={`flex-1 min-w-[64px] py-3 px-2 rounded-xl text-sm font-semibold border transition ${
-            value === opt ? "bg-amber-500 border-amber-500 text-white" : "bg-white border-slate-200 text-slate-600 active:bg-slate-50"}`}>
-          {opt}
-        </button>
-      ))}
-    </div>
-  );
+function secProgress(s){
+  var fs=s.fields.filter(function(f){return f.key.indexOf("f_")!==0&&f.type!=="geo"});
+  if(fs.length===0){var ph=s.fields.filter(function(f){return filled(data[f.key])}).length;return{f:ph,t:s.fields.length}}
+  return{f:fs.filter(function(f){return filled(data[f.key])}).length,t:fs.length};
+}
+function totalProgress(){var t=0,fl=0;SECTIONS.forEach(function(s){s.fields.forEach(function(f){if(f.key.indexOf("f_")===0||f.type==="geo")return;t++;if(filled(data[f.key]))fl++})});return Math.round(fl/t*100)}
+
+function fieldHTML(f){
+  if(f.type==="photo")return"";
+  return '<div class="field"><label>'+esc(f.label)+'</label><div class="ctl" id="ctl-'+f.key+'">'+ctlHTML(f)+'</div></div>';
+}
+function sectionHTML(s){
+  var sp=secProgress(s),body="";
+  if(s.note)body+='<p class="note">'+esc(s.note)+'</p>';
+  if(s.id==="foto"){
+    body+='<div class="photos">';s.fields.forEach(function(f){body+=photoHTML(f)});body+='</div>';
+  }else{ s.fields.forEach(function(f){body+=fieldHTML(f)}); }
+  return '<section class="section'+(open===s.id?" open":"")+'" id="sec-'+s.id+'">'+
+    '<button class="sec-head" data-sec="'+s.id+'"><span class="sec-left"><span class="sec-icon">'+s.icon+'</span><span><span class="sec-title">'+esc(s.title)+'</span><span class="sec-badge" id="badge-'+s.id+'">'+sp.f+'/'+sp.t+' tamamlandı</span></span></span>'+
+    '<span class="sec-right"><span class="sec-ok'+((sp.f===sp.t&&sp.t>0)?"":" hidden")+'" id="ok-'+s.id+'">✓</span><span class="chev">▾</span></span></button>'+
+    '<div class="sec-body">'+body+'</div></section>';
+}
+function photoHTML(f){
+  var v=data[f.key];
+  return '<button class="photo'+(v?" has":"")+'" data-photo="'+f.key+'">'+
+    (v?'<img src="'+v+'">':'<span class="pl">📷</span><span class="cap">'+esc(f.label)+'</span>')+
+    '<input type="file" accept="image/*" capture="environment" class="hidden" data-file="'+f.key+'"></button>';
 }
 
-function Chips({ value = [], options, onChange }) {
-  const toggle = (opt) => onChange(value.includes(opt) ? value.filter((v) => v !== opt) : [...value, opt]);
-  return (
-    <div className="flex gap-2 flex-wrap">
-      {options.map((opt) => (
-        <button key={opt} onClick={() => toggle(opt)}
-          className={`py-2 px-3 rounded-full text-sm font-medium border transition ${
-            value.includes(opt) ? "bg-slate-800 border-slate-800 text-white" : "bg-white border-slate-200 text-slate-600 active:bg-slate-50"}`}>
-          {opt}
-        </button>
-      ))}
-    </div>
-  );
+function render(){
+  var pct=totalProgress();
+  var h='<div class="hdr"><div class="hdr-top"><div><h1>Carrefour Ziyaret Checklist</h1><p>Saha Denetim · Mobile-First</p></div><span class="pct" id="pct">%'+pct+'</span></div><div class="bar"><div class="bar-fill" id="bar" style="width:'+pct+'%"></div></div></div>';
+  h+='<main>';SECTIONS.forEach(function(s){h+=sectionHTML(s)});h+='</main>';
+  h+='<div class="foot"><div class="foot-err hidden" id="ferr"></div><div class="foot-in"><button class="btn-draft" id="draftBtn">Taslak</button><button class="btn-send" id="sendBtn">Denetimi Gönder</button></div></div>';
+  document.getElementById("app").innerHTML=h;
 }
 
-function Stepper({ value = 0, min = 0, max = 99, onChange }) {
-  return (
-    <div className="flex items-center gap-3">
-      <button onClick={() => onChange(Math.max(min, (value || 0) - 1))}
-        className="w-12 h-12 rounded-xl bg-slate-100 text-slate-700 text-2xl font-bold active:bg-slate-200">−</button>
-      <span className="w-14 text-center text-xl font-bold text-slate-800">{value || 0}</span>
-      <button onClick={() => onChange(Math.min(max, (value || 0) + 1))}
-        className="w-12 h-12 rounded-xl bg-slate-800 text-white text-2xl font-bold active:bg-slate-700">+</button>
-    </div>
-  );
-}
-
-function RangeSelect({ value, options, onChange }) {
-  return (
-    <select value={value || ""} onChange={(e) => onChange(e.target.value)}
-      className={`w-full py-3 px-4 rounded-xl text-sm font-semibold border appearance-none ${
-        value ? "bg-amber-50 border-amber-400 text-amber-800" : "bg-white border-slate-200 text-slate-400"}`}>
-      <option value="">Seçin...</option>
-      {options.map((o) => (<option key={o} value={o}>{o}</option>))}
-    </select>
-  );
-}
-
-function Rating3({ value, onChange }) {
-  const opts = [["İyi", "bg-emerald-500"], ["Orta", "bg-amber-500"], ["Kötü", "bg-rose-500"]];
-  return (
-    <div className="flex gap-2">
-      {opts.map(([lbl, color]) => (
-        <button key={lbl} onClick={() => onChange(lbl)}
-          className={`flex-1 py-3 rounded-xl text-sm font-semibold border transition ${
-            value === lbl ? `${color} border-transparent text-white` : "bg-white border-slate-200 text-slate-500 active:bg-slate-50"}`}>
-          {lbl}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function Weight({ value, onChange }) {
-  const opts = ["Yok", "Az", "Orta", "Geniş"];
-  return (
-    <div className="flex gap-1.5">
-      {opts.map((o) => (
-        <button key={o} onClick={() => onChange(o)}
-          className={`flex-1 py-2.5 rounded-lg text-xs font-semibold border transition ${
-            value === o ? (o === "Yok" ? "bg-slate-200 border-slate-300 text-slate-600" : "bg-indigo-500 border-indigo-500 text-white")
-              : "bg-white border-slate-200 text-slate-500 active:bg-slate-50"}`}>
-          {o}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function Stars({ value = 0, onChange }) {
-  return (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <button key={n} onClick={() => onChange(n)} className="text-3xl leading-none">
-          <span className={n <= value ? "text-amber-400" : "text-slate-200"}>★</span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function compressImage(file, maxSide = 1280, quality = 0.6) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        let { width, height } = img;
-        if (width > height && width > maxSide) { height = Math.round((height * maxSide) / width); width = maxSide; }
-        else if (height > maxSide) { width = Math.round((width * maxSide) / height); height = maxSide; }
-        const canvas = document.createElement("canvas");
-        canvas.width = width; canvas.height = height;
-        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", quality));
-      };
-      img.onerror = reject;
-      img.src = reader.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+function refreshProgress(){
+  var pct=totalProgress();
+  document.getElementById("pct").textContent="%"+pct;
+  document.getElementById("bar").style.width=pct+"%";
+  SECTIONS.forEach(function(s){var sp=secProgress(s);
+    var b=document.getElementById("badge-"+s.id);if(b)b.textContent=sp.f+"/"+sp.t+" tamamlandı";
+    var ok=document.getElementById("ok-"+s.id);if(ok){if(sp.f===sp.t&&sp.t>0)ok.classList.remove("hidden");else ok.classList.add("hidden")}
   });
 }
+function rerenderCtl(key){var c=document.getElementById("ctl-"+key);if(c)c.innerHTML=ctlHTML(FIELDS[key])}
 
-function PhotoSlot({ value, label, onChange }) {
-  const ref = useRef(null);
-  const [busy, setBusy] = useState(false);
-  return (
-    <button onClick={() => ref.current && ref.current.click()}
-      className={`relative w-full aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center overflow-hidden ${
-        value ? "border-emerald-400" : "border-slate-200 active:bg-slate-50"}`}>
-      {busy ? (<span className="text-[10px] text-slate-400">İşleniyor...</span>)
-        : value ? (<img src={value} alt={label} className="absolute inset-0 w-full h-full object-cover" />)
-        : (<><span className="text-2xl">📷</span><span className="text-[10px] text-slate-500 mt-1 px-1 text-center leading-tight">{label}</span></>)}
-      <input ref={ref} type="file" accept="image/*" capture="environment" className="hidden"
-        onChange={async (e) => {
-          const file = e.target.files && e.target.files[0];
-          if (!file) return;
-          setBusy(true);
-          try { onChange(await compressImage(file)); }
-          catch { onChange(URL.createObjectURL(file)); }
-          finally { setBusy(false); }
-        }} />
-    </button>
-  );
+/* ---------- olaylar ---------- */
+document.addEventListener("click",function(e){
+  var head=e.target.closest(".sec-head");
+  if(head){var id=head.dataset.sec;open=(open===id?"":id);
+    SECTIONS.forEach(function(s){var el=document.getElementById("sec-"+s.id);if(el){if(s.id===open)el.classList.add("open");else el.classList.remove("open")}});return;}
+
+  var geo=e.target.closest("#geoBtn");if(geo){captureGeo();return;}
+
+  var ph=e.target.closest(".photo");if(ph){var inp=ph.querySelector("input[type=file]");if(inp)inp.click();return;}
+
+  var b=e.target.closest("button[data-key]");
+  if(b){var key=b.dataset.key,f=FIELDS[key];
+    if("set"in b.dataset){data[key]=(f.type==="stars"?+b.dataset.set:b.dataset.set);}
+    else if("chip"in b.dataset){var o=b.dataset.chip,a=Array.isArray(data[key])?data[key]:[];data[key]=a.indexOf(o)>-1?a.filter(function(x){return x!==o}):a.concat([o]);}
+    else if("step"in b.dataset){var d=+b.dataset.step,cur=+(data[key]===undefined?(f.min||0):data[key]);data[key]=Math.max(f.min==null?0:f.min,Math.min(f.max==null?99:f.max,cur+d));}
+    rerenderCtl(key);refreshProgress();return;}
+
+  if(e.target.closest("#sendBtn")){submit();return;}
+  if(e.target.closest("#draftBtn")){draft();return;}
+  if(e.target.closest("#geoClose")){window._geoStatus="idle";rerenderCtl("geo");return;}
+  if(e.target.closest("#geoRetry")){closeGeoModal();captureGeo();return;}
+});
+document.addEventListener("input",function(e){
+  var t=e.target;if(t.dataset&&t.dataset.key&&(t.classList.contains("txt")||t.classList.contains("nte"))){data[t.dataset.key]=t.value;refreshProgress();}
+});
+document.addEventListener("change",function(e){
+  var t=e.target;
+  if(t.tagName==="SELECT"&&t.dataset.key){data[t.dataset.key]=t.value;t.classList.toggle("set",!!t.value);refreshProgress();return;}
+  if(t.dataset&&t.dataset.file){var file=t.files&&t.files[0];if(!file)return;var key=t.dataset.file;
+    compressImage(file).then(function(url){data[key]=url;updatePhoto(key)}).catch(function(){data[key]=URL.createObjectURL(file);updatePhoto(key)});}
+});
+function updatePhoto(key){var btn=document.querySelector('.photo[data-photo="'+key+'"]');if(!btn)return;var f=FIELDS[key];btn.outerHTML=photoHTML(f)}
+
+/* ---------- fotoğraf sıkıştırma ---------- */
+function compressImage(file){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){var img=new Image();img.onload=function(){var w=img.width,hh=img.height,m=1280;if(w>hh&&w>m){hh=Math.round(hh*m/w);w=m}else if(hh>m){w=Math.round(w*m/hh);hh=m}var c=document.createElement("canvas");c.width=w;c.height=hh;c.getContext("2d").drawImage(img,0,0,w,hh);res(c.toDataURL("image/jpeg",0.6))};img.onerror=rej;img.src=r.result};r.onerror=rej;r.readAsDataURL(file)})}
+
+/* ---------- konum ---------- */
+function captureGeo(){
+  if(!navigator.geolocation){window._geoStatus="err";window._geoMsg="Cihaz konum desteklemiyor.";rerenderCtl("geo");return;}
+  window._geoStatus="loading";window._geoMsg="Konum alınıyor...";rerenderCtl("geo");
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var lat=+pos.coords.latitude.toFixed(6),lon=+pos.coords.longitude.toFixed(6);
+    data.lat=lat;data.lon=lon;window._geoStatus="done";window._geoMsg=lat+", "+lon;rerenderCtl("geo");
+    fetch("https://api.bigdatacloud.net/data/reverse-geocode-client?latitude="+lat+"&longitude="+lon+"&localityLanguage=tr").then(function(r){return r.json()}).then(function(j){
+      var il=j.principalSubdivision||j.city||"",ilce=j.locality||j.city||"";var s=[il,ilce].filter(Boolean).join(" / ");
+      if(s){data.ilIlce=s;var inp=document.querySelector('input[data-key="ilIlce"]');if(inp)inp.value=s;refreshProgress();}
+    }).catch(function(){});
+  },function(err){
+    if(err.code===1){window._geoStatus="err";window._geoMsg="Konum izni kapalı.";rerenderCtl("geo");showGeoModal();}
+    else{window._geoStatus="err";window._geoMsg="Konum alınamadı, tekrar deneyin.";rerenderCtl("geo");}
+  },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+}
+function geoSteps(){var ua=navigator.userAgent||"";
+  if(/iPhone|iPad|iPod/i.test(ua))return{n:"iPhone / iPad",s:["Ayarlar > Gizlilik ve Güvenlik > Konum Servisleri'ni açın.","Listeden tarayıcınızı (Safari/Chrome) seçin.","“Uygulamayı Kullanırken”i işaretleyin.","Bu sayfaya dönüp “Tekrar Dene”ye basın."]};
+  if(/Android/i.test(ua))return{n:"Android",s:["Adres çubuğundaki kilit/ⓘ simgesine dokunun.","“İzinler” veya “Konum” bölümüne girin.","Konum iznini “İzin Ver” yapın.","Bu sayfaya dönüp “Tekrar Dene”ye basın."]};
+  return{n:"Tarayıcı",s:["Adres çubuğundaki kilit simgesine tıklayın.","“Site izinleri” altında Konum’u bulun.","“İzin Ver” yapın.","“Tekrar Dene”ye basın."]};
+}
+function showGeoModal(){var g=geoSteps();var li="";g.s.forEach(function(x,i){li+='<li><span class="n">'+(i+1)+'</span><span>'+esc(x)+'</span></li>'});
+  var d=document.createElement("div");d.className="modal";d.id="geoModal";
+  d.innerHTML='<div class="modal-box"><h3>📍 Konum izni kapalı</h3><p class="sub">'+g.n+' için açma adımları:</p><ol>'+li+'</ol><div class="modal-acts"><button class="btn-draft" id="geoClose">Kapat</button><button class="btn-send" id="geoRetry">Tekrar Dene</button></div></div>';
+  document.body.appendChild(d);}
+function closeGeoModal(){var m=document.getElementById("geoModal");if(m)m.remove()}
+
+/* ---------- gönderim ---------- */
+function buildFull(){var out={};SECTIONS.forEach(function(s){s.fields.forEach(function(f){if(f.type==="geo"||f.key.indexOf("f_")===0)return;var v=data[f.key];if(Array.isArray(v))v=v.join(", ");out[f.label]=(v===undefined||v===null)?"":v})});out["Enlem"]=data.lat||"";out["Boylam"]=data.lon||"";return out}
+function collectPhotos(){var ps=[];SECTIONS.forEach(function(s){if(s.id!=="foto")return;s.fields.forEach(function(f){var v=data[f.key];if(typeof v==="string"&&v.indexOf("data:")===0)ps.push({name:f.label+".jpg",b64:v.split(",")[1]})})});return ps}
+function draft(){var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});var u=URL.createObjectURL(blob);var a=document.createElement("a");a.href=u;a.download="magaza-denetim-"+((data.magazaAdi||"kayit").replace(/\s+/g,"-"))+".json";a.click();URL.revokeObjectURL(u)}
+function err(m){var e=document.getElementById("ferr");e.textContent=m;e.classList.remove("hidden")}
+function setSending(b){submitting=b;var s=document.getElementById("sendBtn"),d=document.getElementById("draftBtn");if(s){s.disabled=b;s.textContent=b?"Gönderiliyor...":"Denetimi Gönder"}if(d)d.disabled=b}
+function submit(){
+  if(submitting)return;
+  if(!SUBMIT_URL){draft();showDone();return;}
+  var payload=buildFull(),photos=collectPhotos();
+  setSending(true);document.getElementById("ferr").classList.add("hidden");
+  fetch(SUBMIT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:TOKEN,data:payload,photos:photos})})
+    .then(function(r){return r.text()}).then(function(t){var j;try{j=JSON.parse(t)}catch(e){j={ok:true}}if(j.ok===false)throw new Error(j.error||"Sunucu hatası");showDone();})
+    .catch(function(e){err("Gönderilemedi: "+e.message+". Taslağı indirip tekrar deneyin.");setSending(false)});
+}
+function showDone(){
+  var pct=totalProgress();
+  document.getElementById("app").innerHTML='<div class="done-screen"><div class="em">✅</div><h2>Denetim Kaydedildi</h2><p>'+esc(data.magazaAdi||"Mağaza")+' — %'+pct+' dolduruldu</p><div style="display:flex;gap:12px;margin-top:24px"><button class="btn-send" id="newBtn" style="flex:none;padding:12px 20px">Yeni Ziyaret</button></div></div>';
+  document.getElementById("newBtn").onclick=function(){data={};open="genel";submitting=false;window._geoStatus="idle";window._geoMsg="";render();window.scrollTo(0,0)};
 }
 
-function TextField({ value, placeholder, onChange }) {
-  return (
-    <input type="text" value={value || ""} placeholder={placeholder} onChange={(e) => onChange(e.target.value)}
-      className="w-full py-3 px-4 rounded-xl text-sm border border-slate-200 bg-white text-slate-800 placeholder:text-slate-300 focus:border-amber-400 focus:outline-none" />
-  );
-}
-
-function NoteField({ value, placeholder, onChange }) {
-  return (
-    <textarea value={value || ""} placeholder={placeholder} rows={2} onChange={(e) => onChange(e.target.value)}
-      className="w-full py-3 px-4 rounded-xl text-sm border border-slate-200 bg-white text-slate-800 placeholder:text-slate-300 focus:border-amber-400 focus:outline-none resize-none" />
-  );
-}
-
-function platformSteps() {
-  const ua = navigator.userAgent || "";
-  if (/iPhone|iPad|iPod/i.test(ua)) {
-    return { name: "iPhone / iPad", steps: [
-      "Ayarlar > Gizlilik ve Güvenlik > Konum Servisleri'ni açın.",
-      "Listeden tarayıcınızı (Safari/Chrome) seçin.",
-      '"Uygulamayı Kullanırken" seçeneğini işaretleyin.',
-      "Bu sayfaya dönüp “Tekrar Dene”ye basın." ] };
-  }
-  if (/Android/i.test(ua)) {
-    return { name: "Android", steps: [
-      "Adres çubuğundaki kilit/ⓘ simgesine dokunun.",
-      '"İzinler" veya "Konum" bölümüne girin.',
-      "Konum iznini “İzin Ver” yapın.",
-      "Bu sayfaya dönüp “Tekrar Dene”ye basın." ] };
-  }
-  return { name: "Tarayıcı", steps: [
-    "Adres çubuğunun solundaki kilit simgesine tıklayın.",
-    '"Site izinleri" altında Konum’u bulun.',
-    'Konum’u “İzin Ver” olarak ayarlayın.',
-    "“Tekrar Dene”ye basın." ] };
-}
-
-function GeoCapture({ data, setVal }) {
-  const [status, setStatus] = useState("idle");
-  const [msg, setMsg] = useState("");
-  const [showHelp, setShowHelp] = useState(false);
-
-  const doCapture = () => {
-    if (!navigator.geolocation) { setStatus("error"); setMsg("Cihaz konum desteklemiyor."); return; }
-    setStatus("loading"); setMsg("Konum alınıyor...");
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = +pos.coords.latitude.toFixed(6);
-        const lon = +pos.coords.longitude.toFixed(6);
-        setVal("lat", lat); setVal("lon", lon);
-        setStatus("done"); setShowHelp(false); setMsg(`${lat}, ${lon}`);
-        try {
-          const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=tr`);
-          const j = await r.json();
-          const il = j.principalSubdivision || j.city || "";
-          const ilce = j.locality || j.city || "";
-          if (il || ilce) setVal("ilIlce", [il, ilce].filter(Boolean).join(" / "));
-        } catch (e) {}
-      },
-      (err) => {
-        if (err.code === 1) { setStatus("error"); setMsg("Konum izni kapalı."); setShowHelp(true); }
-        else { setStatus("error"); setMsg("Konum alınamadı, tekrar deneyin."); }
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-  };
-
-  const capture = async () => {
-    try {
-      if (navigator.permissions && navigator.permissions.query) {
-        const st = await navigator.permissions.query({ name: "geolocation" });
-        if (st.state === "denied") {
-          setStatus("error"); setMsg("Konum izni kapalı."); setShowHelp(true);
-          st.onchange = () => { if (st.state === "granted" || st.state === "prompt") doCapture(); };
-          return;
-        }
-      }
-    } catch (e) {}
-    doCapture();
-  };
-
-  const help = showHelp ? platformSteps() : null;
-
-  return (
-    <div>
-      <button onClick={capture} disabled={status === "loading"}
-        className={`w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition ${
-          status === "done" ? "bg-emerald-500 text-white" : status === "error" ? "bg-rose-500 text-white" : "bg-slate-800 text-white active:bg-slate-700"}`}>
-        <span className="text-lg">📍</span>
-        {status === "loading" ? "Alınıyor..." : status === "done" ? "Konum Alındı" : "Konumumu Al"}
-      </button>
-      {(data.lat || msg) && (
-        <p className={`mt-2 text-[11px] ${status === "error" ? "text-rose-600" : "text-slate-500"}`}>
-          {status === "done" && data.lat ? `📌 ${data.lat}, ${data.lon}` : msg}
-        </p>
-      )}
-      {showHelp && help && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-5">
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">📍</span>
-              <div>
-                <h3 className="text-base font-bold text-slate-800">Konum izni kapalı</h3>
-                <p className="text-xs text-slate-500 mt-0.5">{help.name} için açma adımları:</p>
-              </div>
-            </div>
-            <ol className="mt-4 space-y-2">
-              {help.steps.map((s, i) => (
-                <li key={i} className="flex gap-3 text-sm text-slate-700">
-                  <span className="flex-none w-6 h-6 rounded-full bg-slate-800 text-white text-xs font-bold flex items-center justify-center">{i + 1}</span>
-                  <span className="pt-0.5">{s}</span>
-                </li>
-              ))}
-            </ol>
-            <div className="mt-5 flex gap-2">
-              <button onClick={() => setShowHelp(false)} className="px-4 py-3 rounded-xl bg-slate-100 text-slate-700 text-sm font-semibold">Kapat</button>
-              <button onClick={capture} className="flex-1 py-3 rounded-xl bg-emerald-500 text-white text-sm font-bold active:bg-emerald-600">Tekrar Dene</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Field({ field, value, onChange }) {
-  return (
-    <div className="py-3">
-      <label className="block text-sm font-medium text-slate-700 mb-2">{field.label}</label>
-      {field.type === "toggle" && <Toggle value={value} onChange={onChange} />}
-      {field.type === "segmented" && <Segmented value={value} options={field.options} onChange={onChange} />}
-      {field.type === "chips" && <Chips value={value} options={field.options} onChange={onChange} />}
-      {field.type === "stepper" && <Stepper value={value} min={field.min} max={field.max} onChange={onChange} />}
-      {field.type === "select" && <RangeSelect value={value} options={field.options} onChange={onChange} />}
-      {field.type === "rating3" && <Rating3 value={value} onChange={onChange} />}
-      {field.type === "weight" && <Weight value={value} onChange={onChange} />}
-      {field.type === "stars" && <Stars value={value} onChange={onChange} />}
-      {field.type === "text" && <TextField value={value} placeholder={field.placeholder} onChange={onChange} />}
-      {field.type === "note" && <NoteField value={value} placeholder={field.placeholder} onChange={onChange} />}
-    </div>
-  );
-}
-
-function MagazaDenetimApp() {
-  const [data, setData] = useState({});
-  const [open, setOpen] = useState("genel");
-  const [done, setDone] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitErr, setSubmitErr] = useState("");
-
-  const setVal = (key, val) => setData((d) => ({ ...d, [key]: val }));
-  const isFilled = (v) => v !== undefined && v !== "" && v !== null && !(Array.isArray(v) && v.length === 0);
-
-  const { total, filled } = useMemo(() => {
-    let total = 0, filled = 0;
-    SECTIONS.forEach((s) => s.fields.forEach((f) => {
-      if (f.key.startsWith("f_") || f.type === "geo") return;
-      total++; if (isFilled(data[f.key])) filled++;
-    }));
-    return { total, filled };
-  }, [data]);
-
-  const pct = Math.round((filled / total) * 100);
-
-  const sectionProgress = (s) => {
-    const fs = s.fields.filter((f) => !f.key.startsWith("f_") && f.type !== "geo");
-    if (fs.length === 0) {
-      const ph = s.fields.filter((f) => isFilled(data[f.key])).length;
-      return { f: ph, t: s.fields.length };
-    }
-    return { f: fs.filter((f) => isFilled(data[f.key])).length, t: fs.length };
-  };
-
-  const exportJSON = () => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `magaza-denetim-${(data.magazaAdi || "kayit").replace(/\s+/g, "-")}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const buildFull = () => {
-    const out = {};
-    SECTIONS.forEach((s) => s.fields.forEach((f) => {
-      if (f.type === "geo" || f.key.startsWith("f_")) return;
-      let v = data[f.key];
-      if (Array.isArray(v)) v = v.join(", ");
-      if (typeof v === "boolean") v = v ? "Var" : "Yok";
-      out[f.label] = v === undefined || v === null ? "" : v;
-    }));
-    out["Enlem"] = data.lat || "";
-    out["Boylam"] = data.lon || "";
-    return out;
-  };
-
-  const submit = async () => {
-    if (!SUBMIT_URL) { exportJSON(); setDone(true); return; }
-    const payload = buildFull();
-    const photos = [];
-    SECTIONS.find((s) => s.id === "foto").fields.forEach((f) => {
-      const v = data[f.key];
-      if (typeof v === "string" && v.startsWith("data:")) photos.push({ name: `${f.label}.jpg`, b64: v.split(",")[1] });
-    });
-    setSubmitting(true); setSubmitErr("");
-    try {
-      const res = await fetch(SUBMIT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ token: TOKEN, data: payload, photos }),
-      });
-      const j = await res.json().catch(() => ({ ok: res.ok }));
-      if (j.ok === false) throw new Error(j.error || "Sunucu hatası");
-      setDone(true);
-    } catch (e) {
-      setSubmitErr("Gönderilemedi: " + e.message + ". Taslağı indirip tekrar deneyin.");
-    } finally { setSubmitting(false); }
-  };
-
-  if (done) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
-        <div className="text-5xl mb-4">✅</div>
-        <h2 className="text-xl font-bold text-slate-800">Denetim Kaydedildi</h2>
-        <p className="text-slate-500 mt-1 text-sm">{data.magazaAdi || "Mağaza"} — %{pct} dolduruldu</p>
-        <div className="flex gap-3 mt-6">
-          <button onClick={() => { setData({}); setDone(false); setOpen("genel"); }} className="px-5 py-3 rounded-xl bg-emerald-500 text-white text-sm font-semibold">Yeni Ziyaret</button>
-          <button onClick={() => setDone(false)} className="px-5 py-3 rounded-xl bg-white border border-slate-200 text-slate-700 text-sm font-semibold">Geri dön</button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="sticky top-0 z-10 bg-slate-900 text-white px-4 pt-4 pb-3 shadow-lg">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-base font-bold leading-tight">Carrefour Ziyaret Checklist</h1>
-            <p className="text-[11px] text-slate-400">Saha Denetim · Mobile-First</p>
-          </div>
-          <span className="text-2xl font-bold text-amber-400">%{pct}</span>
-        </div>
-        <div className="mt-2 h-2 bg-slate-700 rounded-full overflow-hidden">
-          <div className="h-full bg-amber-400 transition-all" style={{ width: `${pct}%` }} />
-        </div>
-      </header>
-
-      <main className="max-w-md mx-auto px-3 py-4 pb-28 space-y-2">
-        {SECTIONS.map((s) => {
-          const sp = sectionProgress(s);
-          const isOpen = open === s.id;
-          return (
-            <section key={s.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <button onClick={() => setOpen(isOpen ? "" : s.id)} className="w-full flex items-center justify-between px-4 py-4 active:bg-slate-50">
-                <span className="flex items-center gap-3">
-                  <span className="text-xl">{s.icon}</span>
-                  <span className="text-left">
-                    <span className="block text-sm font-bold text-slate-800">{s.title}</span>
-                    <span className="block text-[11px] text-slate-400">{sp.f}/{sp.t} tamamlandı</span>
-                  </span>
-                </span>
-                <span className="flex items-center gap-2">
-                  {sp.f === sp.t && sp.t > 0 && <span className="text-emerald-500 text-lg">✓</span>}
-                  <span className={`text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`}>▾</span>
-                </span>
-              </button>
-              {isOpen && (
-                <div className="px-4 pb-4 border-t border-slate-100">
-                  {s.note && <p className="text-[11px] text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-3">{s.note}</p>}
-                  {s.id === "foto" ? (
-                    <div className="grid grid-cols-3 gap-2 mt-3">
-                      {s.fields.map((f) => (<PhotoSlot key={f.key} value={data[f.key]} label={f.label} onChange={(v) => setVal(f.key, v)} />))}
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-slate-50">
-                      {s.fields.map((f) => f.type === "geo" ? (
-                        <div key={f.key} className="py-3">
-                          <label className="block text-sm font-medium text-slate-700 mb-2">{f.label}</label>
-                          <GeoCapture data={data} setVal={setVal} />
-                        </div>
-                      ) : (
-                        <Field key={f.key} field={f} value={data[f.key]} onChange={(v) => setVal(f.key, v)} />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </section>
-          );
-        })}
-      </main>
-
-      <div className="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 max-w-md mx-auto">
-        {submitErr && (<p className="text-[11px] text-rose-600 bg-rose-50 px-4 py-2">{submitErr}</p>)}
-        <div className="px-4 py-3 flex gap-3">
-          <button onClick={exportJSON} disabled={submitting} className="px-4 py-3 rounded-xl bg-slate-100 text-slate-700 text-sm font-semibold disabled:opacity-50">Taslak</button>
-          <button onClick={submit} disabled={submitting} className="flex-1 py-3 rounded-xl bg-emerald-500 text-white text-sm font-bold active:bg-emerald-600 disabled:opacity-60">
-            {submitting ? "Gönderiliyor..." : "Denetimi Gönder"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById("root")).render(<MagazaDenetimApp />);
-  </script>
+render();
+</script>
 </body>
 </html>
