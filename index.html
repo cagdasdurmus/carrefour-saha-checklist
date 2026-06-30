@@ -7,7 +7,7 @@
 <title>Carrefour Ziyaret Checklist</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>" />
 <style>
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
   body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f1f5f9;color:#0f172a}
   .hdr{position:sticky;top:0;z-index:10;background:#0f172a;color:#fff;padding:14px 16px 12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
   .hdr-top{display:flex;justify-content:space-between;align-items:center}
@@ -34,6 +34,8 @@
   .field{padding:12px 0;border-top:1px solid #f8fafc}
   .field:first-child{border-top:0}
   .field>label{display:block;font-size:14px;font-weight:500;color:#334155;margin-bottom:8px}
+  .field.miss{outline:2px solid #e11d48;outline-offset:4px;border-radius:10px}
+  .req{color:#e11d48}
   .row{display:flex;gap:8px;flex-wrap:wrap}
   .row.tight{gap:6px}
   button.opt{flex:1;min-width:64px;padding:12px 8px;border-radius:12px;font-size:14px;font-weight:600;border:1px solid #e2e8f0;background:#fff;color:#475569;cursor:pointer}
@@ -42,11 +44,11 @@
   .seg.on{background:#f59e0b;border-color:#f59e0b}
   .tgl-yes.on{background:#10b981;border-color:#10b981}
   .tgl-no.on{background:#e2e8f0;border-color:#cbd5e1;color:#475569}
-  .chip{flex:0 0 auto;min-width:0;border-radius:99px;padding:9px 14px;font-weight:500}
+  .chip{flex:0 0 auto;min-width:0;border-radius:99px;padding:11px 16px;min-height:44px;font-weight:500}
   .chip.on{background:#1e293b;border-color:#1e293b;color:#fff}
   .rate.on{border-color:transparent}
   .rate-iyi.on{background:#10b981}.rate-orta.on{background:#f59e0b}.rate-kotu.on{background:#f43f5e}
-  .wt{flex:1;padding:10px 4px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid #e2e8f0;background:#fff;color:#64748b;cursor:pointer}
+  .wt{flex:1;padding:12px 6px;min-height:46px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid #e2e8f0;background:#fff;color:#475569;cursor:pointer}
   .wt.on{background:#6366f1;border-color:#6366f1;color:#fff}
   .wt.on.yok{background:#e2e8f0;border-color:#cbd5e1;color:#475569}
   .step{display:flex;align-items:center;gap:12px}
@@ -54,10 +56,10 @@
   .step .minus{background:#f1f5f9;color:#334155}
   .step .plus{background:#1e293b;color:#fff}
   .step .num{width:56px;text-align:center;font-size:20px;font-weight:700}
-  .stars{display:flex;gap:4px}
-  .stars button{background:none;border:0;font-size:30px;line-height:1;cursor:pointer;color:#e2e8f0;padding:0}
+  .stars{display:flex;gap:10px}
+  .stars button{background:none;border:0;font-size:36px;line-height:1;cursor:pointer;color:#e2e8f0;padding:2px 4px}
   .stars button.on{color:#fbbf24}
-  select.rng,input.txt,textarea.nte{width:100%;padding:12px 14px;border-radius:12px;font-size:14px;border:1px solid #e2e8f0;background:#fff;color:#1e293b;font-family:inherit}
+  select.rng,input.txt,textarea.nte{width:100%;padding:12px 14px;border-radius:12px;font-size:16px;border:1px solid #e2e8f0;background:#fff;color:#1e293b;font-family:inherit}
   select.rng{font-weight:600;-webkit-appearance:none;appearance:none}
   select.rng.set{background:#fffbeb;border-color:#fbbf24;color:#92400e}
   textarea.nte{resize:none}
@@ -106,12 +108,12 @@ var CIRO=["<50K","50-75K","75-100K","100-125K","125-150K","150-200K","200-250K",
 
 var SECTIONS=[
  {id:"genel",title:"Genel Bilgiler",icon:"🏪",fields:[
-   {key:"magazaAdi",label:"Mağaza adı",type:"text",ph:"Örn. Carrefour Bağdat Cd."},
+   {key:"magazaAdi",label:"Mağaza adı",type:"text",ph:"Örn. Carrefour Bağdat Cd.",req:true},
    {key:"magazaKodu",label:"Mağaza kodu",type:"text",ph:"Opsiyonel"},
    {key:"geo",label:"Konum",type:"geo"},
    {key:"ilIlce",label:"İl / İlçe",type:"text",ph:"Konumdan otomatik / manuel"},
-   {key:"ziyaretTipi",label:"Ziyaret tipi",type:"seg",opt:["Kendi noktamız","Rakip"]},
-   {key:"konsept",label:"Konsept",type:"sel",opt:["Hard-discount","Süpermarket","Hipermarket","Express / Mjet","Premium / Gurme","Franchise mağaza"]},
+   {key:"ziyaretTipi",label:"Ziyaret tipi",type:"seg",opt:["Kendi noktamız","Rakip"],req:true},
+   {key:"konsept",label:"Konsept",type:"sel",opt:["Hard-discount","Süpermarket","Hipermarket","Express / Mjet","Premium / Gurme","Franchise mağaza"],req:true},
    {key:"acilisYili",label:"Açılış yılı",type:"sel",opt:YEARS},
    {key:"renovasyon",label:"Son renovasyon",type:"sel",opt:["Hiç / Bilinmiyor","5+ yıl önce","Son 5 yıl","Son 1 yıl"]},
    {key:"toplamAlan",label:"Toplam alan (m²)",type:"seg",opt:["<150","150-400","400-1000","1000-2500","2500-4000","4000+"]},
@@ -197,9 +199,18 @@ var SECTIONS=[
 
 var FIELDS={};SECTIONS.forEach(function(s){s.fields.forEach(function(f){FIELDS[f.key]=f})});
 var data={}, open="genel", submitting=false;
+var LS_KEY="carrefour_denetim_taslak_v1";
 
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 function filled(v){return v!==undefined&&v!==null&&v!==""&&!(Array.isArray(v)&&v.length===0)}
+
+/* Otomatik taslak: yenileme/kapanmada veri kaybını önler (fotoğraflar hariç — kota) */
+function saveLocal(){try{var d={};for(var k in data){if(k.indexOf("f_")!==0)d[k]=data[k]}localStorage.setItem(LS_KEY,JSON.stringify(d))}catch(e){}}
+function loadLocal(){try{var s=localStorage.getItem(LS_KEY);if(s){var d=JSON.parse(s);if(d&&typeof d==="object")data=d}}catch(e){}}
+function clearLocal(){try{localStorage.removeItem(LS_KEY)}catch(e){}}
+
+/* İlk doldurulmamış zorunlu alanı bulur (gizli koşullu alanları atlar) */
+function firstMissing(){var miss=null;SECTIONS.forEach(function(s){s.fields.forEach(function(f){if(miss||!f.req)return;if(f.showIf&&data[f.showIf.key]!==f.showIf.val)return;if(!filled(data[f.key]))miss={f:f,s:s}})});return miss}
 
 function ctlHTML(f){
   var v=data[f.key],h="";
@@ -249,7 +260,7 @@ function totalProgress(){var t=0,fl=0;SECTIONS.forEach(function(s){s.fields.forE
 function fieldHTML(f){
   if(f.type==="photo")return"";
   var hid=f.showIf&&data[f.showIf.key]!==f.showIf.val;
-  return '<div class="field" id="field-'+f.key+'"'+(hid?' style="display:none"':'')+'><label>'+esc(f.label)+'</label><div class="ctl" id="ctl-'+f.key+'">'+ctlHTML(f)+'</div></div>';
+  return '<div class="field" id="field-'+f.key+'"'+(hid?' style="display:none"':'')+'><label>'+esc(f.label)+(f.req?' <span class="req">*</span>':'')+'</label><div class="ctl" id="ctl-'+f.key+'">'+ctlHTML(f)+'</div></div>';
 }
 function refreshConditionals(changedKey){for(var k in FIELDS){var f=FIELDS[k];if(f.showIf&&f.showIf.key===changedKey){var el=document.getElementById("field-"+f.key);if(el)el.style.display=(data[changedKey]===f.showIf.val)?"":"none"}}}
 function sectionHTML(s){
@@ -293,7 +304,9 @@ function rerenderCtl(key){var c=document.getElementById("ctl-"+key);if(c)c.inner
 document.addEventListener("click",function(e){
   var head=e.target.closest(".sec-head");
   if(head){var id=head.dataset.sec;open=(open===id?"":id);
-    SECTIONS.forEach(function(s){var el=document.getElementById("sec-"+s.id);if(el){if(s.id===open)el.classList.add("open");else el.classList.remove("open")}});return;}
+    SECTIONS.forEach(function(s){var el=document.getElementById("sec-"+s.id);if(el)el.classList.toggle("open",s.id===open)});
+    if(open){requestAnimationFrame(function(){var sec=document.getElementById("sec-"+open);if(sec){var hh=document.querySelector(".hdr").offsetHeight;var top=sec.getBoundingClientRect().top+window.pageYOffset-hh-8;window.scrollTo({top:top,behavior:"smooth"})}})}
+    return;}
 
   var geo=e.target.closest("#geoBtn");if(geo){captureGeo();return;}
 
@@ -304,7 +317,7 @@ document.addEventListener("click",function(e){
     if("set"in b.dataset){data[key]=(f.type==="stars"?+b.dataset.set:b.dataset.set);}
     else if("chip"in b.dataset){var o=b.dataset.chip,a=Array.isArray(data[key])?data[key]:[];data[key]=a.indexOf(o)>-1?a.filter(function(x){return x!==o}):a.concat([o]);}
     else if("step"in b.dataset){var d=+b.dataset.step,cur=+(data[key]===undefined?(f.min||0):data[key]);data[key]=Math.max(f.min==null?0:f.min,Math.min(f.max==null?99:f.max,cur+d));}
-    rerenderCtl(key);refreshConditionals(key);refreshProgress();return;}
+    rerenderCtl(key);refreshConditionals(key);refreshProgress();saveLocal();return;}
 
   if(e.target.closest("#sendBtn")){submit();return;}
   if(e.target.closest("#draftBtn")){draft();return;}
@@ -312,18 +325,18 @@ document.addEventListener("click",function(e){
   if(e.target.closest("#geoRetry")){closeGeoModal();captureGeo();return;}
 });
 document.addEventListener("input",function(e){
-  var t=e.target;if(t.dataset&&t.dataset.key&&(t.classList.contains("txt")||t.classList.contains("nte"))){data[t.dataset.key]=t.value;refreshProgress();}
+  var t=e.target;if(t.dataset&&t.dataset.key&&(t.classList.contains("txt")||t.classList.contains("nte"))){data[t.dataset.key]=t.value;refreshProgress();saveLocal();}
 });
 document.addEventListener("change",function(e){
   var t=e.target;
-  if(t.tagName==="SELECT"&&t.dataset.key){data[t.dataset.key]=t.value;t.classList.toggle("set",!!t.value);refreshProgress();return;}
+  if(t.tagName==="SELECT"&&t.dataset.key){data[t.dataset.key]=t.value;t.classList.toggle("set",!!t.value);refreshProgress();saveLocal();return;}
   if(t.dataset&&t.dataset.file){var file=t.files&&t.files[0];if(!file)return;var key=t.dataset.file;
-    compressImage(file).then(function(url){data[key]=url;updatePhoto(key)}).catch(function(){data[key]=URL.createObjectURL(file);updatePhoto(key)});}
+    compressImage(file).then(function(url){data[key]=url;updatePhoto(key)}).catch(function(){var fr=new FileReader();fr.onload=function(){data[key]=fr.result;updatePhoto(key)};fr.readAsDataURL(file)});}
 });
 function updatePhoto(key){var btn=document.querySelector('.photo[data-photo="'+key+'"]');if(!btn)return;var f=FIELDS[key];btn.outerHTML=photoHTML(f)}
 
 /* ---------- fotoğraf sıkıştırma ---------- */
-function compressImage(file){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){var img=new Image();img.onload=function(){var w=img.width,hh=img.height,m=1280;if(w>hh&&w>m){hh=Math.round(hh*m/w);w=m}else if(hh>m){w=Math.round(w*m/hh);hh=m}var c=document.createElement("canvas");c.width=w;c.height=hh;c.getContext("2d").drawImage(img,0,0,w,hh);res(c.toDataURL("image/jpeg",0.6))};img.onerror=rej;img.src=r.result};r.onerror=rej;r.readAsDataURL(file)})}
+function compressImage(file){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){var img=new Image();img.onload=function(){var w=img.width,hh=img.height,m=1024;if(w>hh&&w>m){hh=Math.round(hh*m/w);w=m}else if(hh>m){w=Math.round(w*m/hh);hh=m}var c=document.createElement("canvas");c.width=w;c.height=hh;c.getContext("2d").drawImage(img,0,0,w,hh);res(c.toDataURL("image/jpeg",0.5))};img.onerror=rej;img.src=r.result};r.onerror=rej;r.readAsDataURL(file)})}
 
 /* ---------- konum ---------- */
 function captureGeo(){
@@ -332,7 +345,8 @@ function captureGeo(){
   navigator.geolocation.getCurrentPosition(function(pos){
     var lat=+pos.coords.latitude.toFixed(6),lon=+pos.coords.longitude.toFixed(6);
     data.lat=lat;data.lon=lon;window._geoStatus="done";window._geoMsg=lat+", "+lon;rerenderCtl("geo");
-    fetch("https://api.bigdatacloud.net/data/reverse-geocode-client?latitude="+lat+"&longitude="+lon+"&localityLanguage=tr").then(function(r){return r.json()}).then(function(j){
+    var gc=new AbortController();setTimeout(function(){gc.abort()},8000);
+    fetch("https://api.bigdatacloud.net/data/reverse-geocode-client?latitude="+lat+"&longitude="+lon+"&localityLanguage=tr",{signal:gc.signal}).then(function(r){return r.json()}).then(function(j){
       var il=j.principalSubdivision||j.city||"",ilce=j.locality||j.city||"";var s=[il,ilce].filter(Boolean).join(" / ");
       if(s){data.ilIlce=s;var inp=document.querySelector('input[data-key="ilIlce"]');if(inp)inp.value=s;refreshProgress();}
     }).catch(function(){});
@@ -360,12 +374,25 @@ function err(m){var e=document.getElementById("ferr");e.textContent=m;e.classLis
 function setSending(b){submitting=b;var s=document.getElementById("sendBtn"),d=document.getElementById("draftBtn");if(s){s.disabled=b;s.textContent=b?"Gönderiliyor...":"Denetimi Gönder"}if(d)d.disabled=b}
 function submit(){
   if(submitting)return;
-  if(!SUBMIT_URL){draft();showDone();return;}
+  // 1) Zorunlu alan kontrolü
+  var m=firstMissing();
+  if(m){
+    if(open!==m.s.id){open=m.s.id;SECTIONS.forEach(function(s){var el=document.getElementById("sec-"+s.id);if(el)el.classList.toggle("open",s.id===open)})}
+    err("Lütfen zorunlu alanı doldurun: "+m.f.label);
+    requestAnimationFrame(function(){var fe=document.getElementById("field-"+m.f.key);if(fe){var hh=document.querySelector(".hdr").offsetHeight;window.scrollTo({top:fe.getBoundingClientRect().top+window.pageYOffset-hh-20,behavior:"smooth"});fe.classList.add("miss");setTimeout(function(){fe.classList.remove("miss")},2500);var inp=fe.querySelector("input,select,textarea");if(inp){try{inp.focus()}catch(e){}}}});
+    return;
+  }
+  // 2) Çevrimdışı kontrolü (veri zaten localStorage'da güvende)
+  if(!navigator.onLine){err("İnternet bağlantısı yok. Bağlanınca tekrar 'Gönder'e basın — verileriniz kayıtlı.");return;}
+  // 3) Çift gönderimi engelle + idempotency anahtarı
+  submitting=true;
+  if(!data._submitId)data._submitId=Date.now()+"-"+Math.random().toString(36).slice(2);
   var payload=buildFull(),photos=collectPhotos();
   setSending(true);document.getElementById("ferr").classList.add("hidden");
-  fetch(SUBMIT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:TOKEN,data:payload,photos:photos})})
-    .then(function(r){return r.text()}).then(function(t){var j;try{j=JSON.parse(t)}catch(e){j={ok:true}}if(j.ok===false)throw new Error(j.error||"Sunucu hatası");showDone();})
-    .catch(function(e){err("Gönderilemedi: "+e.message+". Taslağı indirip tekrar deneyin.");setSending(false)});
+  var ctrl=new AbortController();var to=setTimeout(function(){ctrl.abort()},45000);
+  fetch(SUBMIT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:TOKEN,submitId:data._submitId,data:payload,photos:photos}),signal:ctrl.signal})
+    .then(function(r){return r.text()}).then(function(t){clearTimeout(to);var j;try{j=JSON.parse(t)}catch(e){j={ok:true}}if(j.ok===false)throw new Error(j.error||"Sunucu hatası");clearLocal();showDone();})
+    .catch(function(e){clearTimeout(to);var msg=(e&&e.name==="AbortError")?"Bağlantı çok yavaş (zaman aşımı)":e.message;err("Gönderilemedi: "+msg+". Verileriniz kayıtlı, tekrar deneyin.");setSending(false)});
 }
 function showDone(){
   var pct=totalProgress();
@@ -373,6 +400,7 @@ function showDone(){
   document.getElementById("newBtn").onclick=function(){data={};open="genel";submitting=false;window._geoStatus="idle";window._geoMsg="";render();window.scrollTo(0,0)};
 }
 
+loadLocal();
 render();
 </script>
 </body>
