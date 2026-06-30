@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Carrefour Ziyaret Checklist</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style> body { -webkit-tap-highlight-color: transparent; } </style>
+</head>
+<body>
+  <div id="root" style="font-family: system-ui, -apple-system, sans-serif;">
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:#64748b;">Yükleniyor…</div>
+  </div>
+
+  <script type="text/babel" data-presets="react">
+const { useState, useMemo, useRef } = React;
+
+// ---------- Webhook ayarları ----------
+const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbzyVd8avpnUTA02atCl4EmoXnp951nqcYv404_mOP7JQh_TqPScjGrA42RqvImf4FM/exec";
+const TOKEN = "";
+
+// ---------- Konfigürasyon ----------
+const SECTIONS = [
+  {
+    id: "genel",
+    title: "Genel Bilgiler",
+    icon: "🏪",
+    fields: [
+      { key: "magazaAdi", label: "Mağaza adı", type: "text", placeholder: "Örn. Carrefour Bağdat Cd." },
+      { key: "magazaKodu", label: "Mağaza kodu", type: "text", placeholder: "Opsiyonel" },
+      { key: "geo", label: "Konum", type: "geo" },
+      { key: "ilIlce", label: "İl / İlçe", type: "text", placeholder: "Konumdan otomatik / manuel" },
+      { key: "ziyaretTipi", label: "Ziyaret tipi", type: "segmented", options: ["Kendi noktamız", "Rakip"] },
+      { key: "konsept", label: "Konsept", type: "select", options: ["Hard-discount", "Süpermarket", "Hipermarket", "Mahalle marketi", "Premium / Gurme"] },
+      { key: "acilisYili", label: "Açılış yılı", type: "select", options: ["<2000", "2000-2010", "2011-2018", "2019-2023", "2024+"] },
+      { key: "renovasyon", label: "Son renovasyon", type: "select", options: ["Hiç / Bilinmiyor", "5+ yıl önce", "Son 5 yıl", "Son 1 yıl"] },
+      { key: "toplamAlan", label: "Toplam alan (m²)", type: "segmented", options: ["<150", "150-400", "400-1000", "1000-2500", "2500-4000", "4000+"] },
+      { key: "satisAlani", label: "Satış alanı (m²)", type: "segmented", options: ["<150", "150-400", "400-1000", "1000-2500", "2500-4000", "4000+"] },
+      { key: "katSayisi", label: "Kat sayısı", type: "stepper", min: 1, max: 5 },
+      { key: "otopark", label: "Otopark", type: "toggle" },
+      { key: "hizmetliReyonlar", label: "Hizmetli reyonlar", type: "chips", options: ["Açık şarküteri", "Balık reyonu", "Fırın (in-store)", "Açık kuruyemiş", "Kasap"] },
+      { key: "donukDolapSayi", label: "Donuk dolap sayısı", type: "stepper", min: 0, max: 80 },
+      { key: "donukDolapMetre", label: "Donuk dolap metresi", type: "segmented", options: ["<5m", "5-15m", "15-30m", "30-60m", "60m+"] },
+    ],
+  },
+  {
+    id: "musteri",
+    title: "Müşteri Profili",
+    icon: "👥",
+    fields: [
+      { key: "gelir", label: "Gelir seviyesi", type: "segmented", options: ["Düşük", "Orta", "Üst"] },
+      { key: "konutOfis", label: "Konut / Ofis ağırlığı", type: "segmented", options: ["Konut", "Karma", "Ofis"] },
+      { key: "yayaTrafigi", label: "Yaya trafiği", type: "segmented", options: ["Az", "Orta", "Yoğun"] },
+      { key: "aracTrafigi", label: "Araç trafiği", type: "segmented", options: ["Az", "Orta", "Yoğun"] },
+      { key: "konum", label: "Konum / çevre", type: "chips", options: ["Cadde", "AVM", "Mahalle arası", "Sanayi", "Okul yakını", "Hastane yakını", "Ulaşım merkezi"] },
+      { key: "premiumMusteri", label: "Premium müşteri potansiyeli", type: "toggle" },
+      { key: "geceSatis", label: "Gece satış potansiyeli", type: "toggle" },
+    ],
+  },
+  {
+    id: "operasyon",
+    title: "Operasyon",
+    icon: "🛒",
+    fields: [
+      { key: "kasaSayisi", label: "Kasa sayısı", type: "stepper", min: 0, max: 80 },
+      { key: "selfCheckout", label: "Self-checkout", type: "toggle" },
+      { key: "sigaraKasasi", label: "Sigara kasası", type: "toggle" },
+      { key: "onlineHazirlama", label: "Online hazırlama alanı", type: "toggle" },
+      { key: "clickCollect", label: "Click & Collect", type: "toggle" },
+      { key: "onlineTeslimat", label: "Online teslimat", type: "toggle" },
+    ],
+  },
+  {
+    id: "performans",
+    title: "Performans (Tahmini)",
+    icon: "📊",
+    note: "Rakip mağazalarda gözleme dayalı tahmini aralık seçin.",
+    fields: [
+      { key: "gunlukMusteri", label: "Günlük müşteri", type: "select", options: ["<500", "500-1.500", "1.500-3.000", "3.000-6.000", "6.000-10.000", "10.000+"] },
+      { key: "gunlukFis", label: "Günlük fiş", type: "select", options: ["<400", "400-1.200", "1.200-2.500", "2.500-5.000", "5.000-9.000", "9.000+"] },
+      { key: "ortSepet", label: "Ortalama sepet (₺)", type: "select", options: ["<150", "150-300", "300-600", "600-1.000", "1.000+"] },
+      { key: "gunlukCiro", label: "Günlük ciro (₺)", type: "select", options: ["<50K", "50-150K", "150-400K", "400K-1M", "1M-3M", "3M+"] },
+      { key: "yillikCiro", label: "Yıllık ciro (₺)", type: "select", options: ["<20M", "20-60M", "60-150M", "150-500M", "500M-1Mr", "1Mr+"] },
+    ],
+  },
+  {
+    id: "fiyat",
+    title: "Fiyat & Promosyon",
+    icon: "🏷️",
+    fields: [
+      { key: "fiyatUyum", label: "Raf ↔ kasa fiyat uyumu", type: "segmented", options: ["Uyumlu", "Farklı", "Bakılmadı"] },
+      { key: "promosyon", label: "Aktif promosyon", type: "toggle" },
+      { key: "promoTipi", label: "Promosyon tipi", type: "select", options: ["2 Al 1 Öde", "% İndirim", "Sepette indirim", "Kart / App özel", "Yok"] },
+      { key: "etiketDogruluk", label: "Etiket doğruluğu", type: "rating3" },
+    ],
+  },
+  {
+    id: "alkolAlan",
+    title: "Alkol Kategori Alanı",
+    icon: "🍷",
+    fields: [
+      { key: "kategoriAlani", label: "Toplam kategori alanı", type: "segmented", options: ["Küçük", "Orta", "Geniş", "Çok geniş"] },
+      { key: "sogukAlan", label: "Soğuk alan", type: "toggle" },
+      { key: "dolapSayisi", label: "Soğuk dolap sayısı", type: "stepper", min: 0, max: 60 },
+      { key: "sogukMetre", label: "Soğuk dolap metresi", type: "segmented", options: ["<3m", "3-8m", "8-20m", "20-40m", "40m+"] },
+      { key: "rafMetre", label: "Toplam raf metresi", type: "segmented", options: ["<5m", "5-15m", "15-30m", "30-60m", "60m+"] },
+      { key: "gondol", label: "Gondol / Ada teşhir", type: "toggle" },
+      { key: "premiumAlan", label: "Premium / özel konsept alan", type: "toggle" },
+    ],
+  },
+  {
+    id: "dagilim",
+    title: "Kategori Dağılımı",
+    icon: "🥃",
+    note: "Her tür için reyon ağırlığını seçin.",
+    fields: [
+      "Bira", "Şarap", "Rakı", "Viski", "Votka", "Cin", "Rom", "Tekila", "Likör", "RTD", "Mixer",
+    ].map((t) => ({ key: "d_" + t, label: t, type: "weight" })),
+  },
+  {
+    id: "vm",
+    title: "Görsel Merchandising",
+    icon: "✨",
+    fields: [
+      { key: "tabela", label: "Kategori tabelası", type: "rating3" },
+      { key: "aydinlatma", label: "Aydınlatma", type: "rating3" },
+      { key: "dekor", label: "Dekor", type: "rating3" },
+      { key: "posm", label: "POSM kullanımı", type: "rating3" },
+      { key: "kampanyaAlani", label: "Kampanya alanı", type: "rating3" },
+      { key: "navigasyon", label: "Navigasyon / yönlendirme", type: "rating3" },
+    ],
+  },
+  {
+    id: "rekabet",
+    title: "Rekabet (Yakında var mı?)",
+    icon: "⚔️",
+    fields: [
+      { key: "migros", label: "Migros", type: "toggle" },
+      { key: "macrocenter", label: "Macrocenter", type: "toggle" },
+      { key: "tekel", label: "Tekel bayi", type: "toggle" },
+      { key: "metro", label: "Metro", type: "toggle" },
+      { key: "digerZincir", label: "Diğer zincirler", type: "toggle" },
+      { key: "tehdit", label: "Genel tehdit skoru", type: "segmented", options: ["Düşük", "Orta", "Yüksek"] },
+    ],
+  },
+  {
+    id: "foto",
+    title: "Fotoğraflar",
+    icon: "📸",
+    note: "Dokun ve çek — opsiyonel.",
+    fields: [
+      "Dış cephe", "Giriş", "Genel görünüm", "Soğuk dolap", "Raflar",
+      "Premium alan", "Kampanya", "Fiyat etiketleri", "Kasa", "Çıkış",
+    ].map((t) => ({ key: "f_" + t, label: t, type: "photo" })),
+  },
+  {
+    id: "degerlendirme",
+    title: "Değerlendirme",
+    icon: "⭐",
+    fields: [
+      { key: "premiumAlgisi", label: "Premium algısı", type: "stars" },
+      { key: "okunabilirlik", label: "Kategori okunabilirliği", type: "stars" },
+      { key: "alanVerimliligi", label: "Alan verimliliği", type: "stars" },
+      { key: "sogukSunum", label: "Soğuk içki sunumu", type: "stars" },
+      { key: "genelPuan", label: "Genel puan", type: "stars" },
+      { key: "guclu", label: "Güçlü yönler", type: "note", placeholder: "Kısa not..." },
+      { key: "gelisim", label: "Gelişim alanları", type: "note", placeholder: "Kısa not..." },
+      { key: "notlar", label: "Ek notlar", type: "note", placeholder: "Opsiyonel..." },
+    ],
+  },
+];
+
+// ---------- UI Primitifleri ----------
+function Toggle({ value, onChange }) {
+  return (
+    <div className="flex gap-2">
+      {[["Var", true], ["Yok", false]].map(([lbl, val]) => (
+        <button key={lbl} onClick={() => onChange(val)}
+          className={`flex-1 py-3 rounded-xl text-sm font-semibold border transition ${
+            value === val ? (val ? "bg-emerald-500 border-emerald-500 text-white" : "bg-slate-200 border-slate-300 text-slate-700")
+              : "bg-white border-slate-200 text-slate-500 active:bg-slate-50"}`}>
+          {lbl}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Segmented({ value, options, onChange }) {
+  return (
+    <div className="flex gap-2 flex-wrap">
+      {options.map((opt) => (
+        <button key={opt} onClick={() => onChange(opt)}
+          className={`flex-1 min-w-[64px] py-3 px-2 rounded-xl text-sm font-semibold border transition ${
+            value === opt ? "bg-amber-500 border-amber-500 text-white" : "bg-white border-slate-200 text-slate-600 active:bg-slate-50"}`}>
+          {opt}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Chips({ value = [], options, onChange }) {
+  const toggle = (opt) => onChange(value.includes(opt) ? value.filter((v) => v !== opt) : [...value, opt]);
+  return (
+    <div className="flex gap-2 flex-wrap">
+      {options.map((opt) => (
+        <button key={opt} onClick={() => toggle(opt)}
+          className={`py-2 px-3 rounded-full text-sm font-medium border transition ${
+            value.includes(opt) ? "bg-slate-800 border-slate-800 text-white" : "bg-white border-slate-200 text-slate-600 active:bg-slate-50"}`}>
+          {opt}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Stepper({ value = 0, min = 0, max = 99, onChange }) {
+  return (
+    <div className="flex items-center gap-3">
+      <button onClick={() => onChange(Math.max(min, (value || 0) - 1))}
+        className="w-12 h-12 rounded-xl bg-slate-100 text-slate-700 text-2xl font-bold active:bg-slate-200">−</button>
+      <span className="w-14 text-center text-xl font-bold text-slate-800">{value || 0}</span>
+      <button onClick={() => onChange(Math.min(max, (value || 0) + 1))}
+        className="w-12 h-12 rounded-xl bg-slate-800 text-white text-2xl font-bold active:bg-slate-700">+</button>
+    </div>
+  );
+}
+
+function RangeSelect({ value, options, onChange }) {
+  return (
+    <select value={value || ""} onChange={(e) => onChange(e.target.value)}
+      className={`w-full py-3 px-4 rounded-xl text-sm font-semibold border appearance-none ${
+        value ? "bg-amber-50 border-amber-400 text-amber-800" : "bg-white border-slate-200 text-slate-400"}`}>
+      <option value="">Seçin...</option>
+      {options.map((o) => (<option key={o} value={o}>{o}</option>))}
+    </select>
+  );
+}
+
+function Rating3({ value, onChange }) {
+  const opts = [["İyi", "bg-emerald-500"], ["Orta", "bg-amber-500"], ["Kötü", "bg-rose-500"]];
+  return (
+    <div className="flex gap-2">
+      {opts.map(([lbl, color]) => (
+        <button key={lbl} onClick={() => onChange(lbl)}
+          className={`flex-1 py-3 rounded-xl text-sm font-semibold border transition ${
+            value === lbl ? `${color} border-transparent text-white` : "bg-white border-slate-200 text-slate-500 active:bg-slate-50"}`}>
+          {lbl}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Weight({ value, onChange }) {
+  const opts = ["Yok", "Az", "Orta", "Geniş"];
+  return (
+    <div className="flex gap-1.5">
+      {opts.map((o) => (
+        <button key={o} onClick={() => onChange(o)}
+          className={`flex-1 py-2.5 rounded-lg text-xs font-semibold border transition ${
+            value === o ? (o === "Yok" ? "bg-slate-200 border-slate-300 text-slate-600" : "bg-indigo-500 border-indigo-500 text-white")
+              : "bg-white border-slate-200 text-slate-500 active:bg-slate-50"}`}>
+          {o}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Stars({ value = 0, onChange }) {
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button key={n} onClick={() => onChange(n)} className="text-3xl leading-none">
+          <span className={n <= value ? "text-amber-400" : "text-slate-200"}>★</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function compressImage(file, maxSide = 1280, quality = 0.6) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxSide) { height = Math.round((height * maxSide) / width); width = maxSide; }
+        else if (height > maxSide) { width = Math.round((width * maxSide) / height); height = maxSide; }
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function PhotoSlot({ value, label, onChange }) {
+  const ref = useRef(null);
+  const [busy, setBusy] = useState(false);
+  return (
+    <button onClick={() => ref.current && ref.current.click()}
+      className={`relative w-full aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center overflow-hidden ${
+        value ? "border-emerald-400" : "border-slate-200 active:bg-slate-50"}`}>
+      {busy ? (<span className="text-[10px] text-slate-400">İşleniyor...</span>)
+        : value ? (<img src={value} alt={label} className="absolute inset-0 w-full h-full object-cover" />)
+        : (<><span className="text-2xl">📷</span><span className="text-[10px] text-slate-500 mt-1 px-1 text-center leading-tight">{label}</span></>)}
+      <input ref={ref} type="file" accept="image/*" capture="environment" className="hidden"
+        onChange={async (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          setBusy(true);
+          try { onChange(await compressImage(file)); }
+          catch { onChange(URL.createObjectURL(file)); }
+          finally { setBusy(false); }
+        }} />
+    </button>
+  );
+}
+
+function TextField({ value, placeholder, onChange }) {
+  return (
+    <input type="text" value={value || ""} placeholder={placeholder} onChange={(e) => onChange(e.target.value)}
+      className="w-full py-3 px-4 rounded-xl text-sm border border-slate-200 bg-white text-slate-800 placeholder:text-slate-300 focus:border-amber-400 focus:outline-none" />
+  );
+}
+
+function NoteField({ value, placeholder, onChange }) {
+  return (
+    <textarea value={value || ""} placeholder={placeholder} rows={2} onChange={(e) => onChange(e.target.value)}
+      className="w-full py-3 px-4 rounded-xl text-sm border border-slate-200 bg-white text-slate-800 placeholder:text-slate-300 focus:border-amber-400 focus:outline-none resize-none" />
+  );
+}
+
+function platformSteps() {
+  const ua = navigator.userAgent || "";
+  if (/iPhone|iPad|iPod/i.test(ua)) {
+    return { name: "iPhone / iPad", steps: [
+      "Ayarlar > Gizlilik ve Güvenlik > Konum Servisleri'ni açın.",
+      "Listeden tarayıcınızı (Safari/Chrome) seçin.",
+      '"Uygulamayı Kullanırken" seçeneğini işaretleyin.',
+      "Bu sayfaya dönüp “Tekrar Dene”ye basın." ] };
+  }
+  if (/Android/i.test(ua)) {
+    return { name: "Android", steps: [
+      "Adres çubuğundaki kilit/ⓘ simgesine dokunun.",
+      '"İzinler" veya "Konum" bölümüne girin.',
+      "Konum iznini “İzin Ver” yapın.",
+      "Bu sayfaya dönüp “Tekrar Dene”ye basın." ] };
+  }
+  return { name: "Tarayıcı", steps: [
+    "Adres çubuğunun solundaki kilit simgesine tıklayın.",
+    '"Site izinleri" altında Konum’u bulun.',
+    'Konum’u “İzin Ver” olarak ayarlayın.',
+    "“Tekrar Dene”ye basın." ] };
+}
+
+function GeoCapture({ data, setVal }) {
+  const [status, setStatus] = useState("idle");
+  const [msg, setMsg] = useState("");
+  const [showHelp, setShowHelp] = useState(false);
+
+  const doCapture = () => {
+    if (!navigator.geolocation) { setStatus("error"); setMsg("Cihaz konum desteklemiyor."); return; }
+    setStatus("loading"); setMsg("Konum alınıyor...");
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = +pos.coords.latitude.toFixed(6);
+        const lon = +pos.coords.longitude.toFixed(6);
+        setVal("lat", lat); setVal("lon", lon);
+        setStatus("done"); setShowHelp(false); setMsg(`${lat}, ${lon}`);
+        try {
+          const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=tr`);
+          const j = await r.json();
+          const il = j.principalSubdivision || j.city || "";
+          const ilce = j.locality || j.city || "";
+          if (il || ilce) setVal("ilIlce", [il, ilce].filter(Boolean).join(" / "));
+        } catch (e) {}
+      },
+      (err) => {
+        if (err.code === 1) { setStatus("error"); setMsg("Konum izni kapalı."); setShowHelp(true); }
+        else { setStatus("error"); setMsg("Konum alınamadı, tekrar deneyin."); }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  const capture = async () => {
+    try {
+      if (navigator.permissions && navigator.permissions.query) {
+        const st = await navigator.permissions.query({ name: "geolocation" });
+        if (st.state === "denied") {
+          setStatus("error"); setMsg("Konum izni kapalı."); setShowHelp(true);
+          st.onchange = () => { if (st.state === "granted" || st.state === "prompt") doCapture(); };
+          return;
+        }
+      }
+    } catch (e) {}
+    doCapture();
+  };
+
+  const help = showHelp ? platformSteps() : null;
+
+  return (
+    <div>
+      <button onClick={capture} disabled={status === "loading"}
+        className={`w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition ${
+          status === "done" ? "bg-emerald-500 text-white" : status === "error" ? "bg-rose-500 text-white" : "bg-slate-800 text-white active:bg-slate-700"}`}>
+        <span className="text-lg">📍</span>
+        {status === "loading" ? "Alınıyor..." : status === "done" ? "Konum Alındı" : "Konumumu Al"}
+      </button>
+      {(data.lat || msg) && (
+        <p className={`mt-2 text-[11px] ${status === "error" ? "text-rose-600" : "text-slate-500"}`}>
+          {status === "done" && data.lat ? `📌 ${data.lat}, ${data.lon}` : msg}
+        </p>
+      )}
+      {showHelp && help && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-5">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">📍</span>
+              <div>
+                <h3 className="text-base font-bold text-slate-800">Konum izni kapalı</h3>
+                <p className="text-xs text-slate-500 mt-0.5">{help.name} için açma adımları:</p>
+              </div>
+            </div>
+            <ol className="mt-4 space-y-2">
+              {help.steps.map((s, i) => (
+                <li key={i} className="flex gap-3 text-sm text-slate-700">
+                  <span className="flex-none w-6 h-6 rounded-full bg-slate-800 text-white text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                  <span className="pt-0.5">{s}</span>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-5 flex gap-2">
+              <button onClick={() => setShowHelp(false)} className="px-4 py-3 rounded-xl bg-slate-100 text-slate-700 text-sm font-semibold">Kapat</button>
+              <button onClick={capture} className="flex-1 py-3 rounded-xl bg-emerald-500 text-white text-sm font-bold active:bg-emerald-600">Tekrar Dene</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Field({ field, value, onChange }) {
+  return (
+    <div className="py-3">
+      <label className="block text-sm font-medium text-slate-700 mb-2">{field.label}</label>
+      {field.type === "toggle" && <Toggle value={value} onChange={onChange} />}
+      {field.type === "segmented" && <Segmented value={value} options={field.options} onChange={onChange} />}
+      {field.type === "chips" && <Chips value={value} options={field.options} onChange={onChange} />}
+      {field.type === "stepper" && <Stepper value={value} min={field.min} max={field.max} onChange={onChange} />}
+      {field.type === "select" && <RangeSelect value={value} options={field.options} onChange={onChange} />}
+      {field.type === "rating3" && <Rating3 value={value} onChange={onChange} />}
+      {field.type === "weight" && <Weight value={value} onChange={onChange} />}
+      {field.type === "stars" && <Stars value={value} onChange={onChange} />}
+      {field.type === "text" && <TextField value={value} placeholder={field.placeholder} onChange={onChange} />}
+      {field.type === "note" && <NoteField value={value} placeholder={field.placeholder} onChange={onChange} />}
+    </div>
+  );
+}
+
+function MagazaDenetimApp() {
+  const [data, setData] = useState({});
+  const [open, setOpen] = useState("genel");
+  const [done, setDone] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitErr, setSubmitErr] = useState("");
+
+  const setVal = (key, val) => setData((d) => ({ ...d, [key]: val }));
+  const isFilled = (v) => v !== undefined && v !== "" && v !== null && !(Array.isArray(v) && v.length === 0);
+
+  const { total, filled } = useMemo(() => {
+    let total = 0, filled = 0;
+    SECTIONS.forEach((s) => s.fields.forEach((f) => {
+      if (f.key.startsWith("f_") || f.type === "geo") return;
+      total++; if (isFilled(data[f.key])) filled++;
+    }));
+    return { total, filled };
+  }, [data]);
+
+  const pct = Math.round((filled / total) * 100);
+
+  const sectionProgress = (s) => {
+    const fs = s.fields.filter((f) => !f.key.startsWith("f_") && f.type !== "geo");
+    if (fs.length === 0) {
+      const ph = s.fields.filter((f) => isFilled(data[f.key])).length;
+      return { f: ph, t: s.fields.length };
+    }
+    return { f: fs.filter((f) => isFilled(data[f.key])).length, t: fs.length };
+  };
+
+  const exportJSON = () => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `magaza-denetim-${(data.magazaAdi || "kayit").replace(/\s+/g, "-")}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const buildFull = () => {
+    const out = {};
+    SECTIONS.forEach((s) => s.fields.forEach((f) => {
+      if (f.type === "geo" || f.key.startsWith("f_")) return;
+      let v = data[f.key];
+      if (Array.isArray(v)) v = v.join(", ");
+      if (typeof v === "boolean") v = v ? "Var" : "Yok";
+      out[f.label] = v === undefined || v === null ? "" : v;
+    }));
+    out["Enlem"] = data.lat || "";
+    out["Boylam"] = data.lon || "";
+    return out;
+  };
+
+  const submit = async () => {
+    if (!SUBMIT_URL) { exportJSON(); setDone(true); return; }
+    const payload = buildFull();
+    const photos = [];
+    SECTIONS.find((s) => s.id === "foto").fields.forEach((f) => {
+      const v = data[f.key];
+      if (typeof v === "string" && v.startsWith("data:")) photos.push({ name: `${f.label}.jpg`, b64: v.split(",")[1] });
+    });
+    setSubmitting(true); setSubmitErr("");
+    try {
+      const res = await fetch(SUBMIT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ token: TOKEN, data: payload, photos }),
+      });
+      const j = await res.json().catch(() => ({ ok: res.ok }));
+      if (j.ok === false) throw new Error(j.error || "Sunucu hatası");
+      setDone(true);
+    } catch (e) {
+      setSubmitErr("Gönderilemedi: " + e.message + ". Taslağı indirip tekrar deneyin.");
+    } finally { setSubmitting(false); }
+  };
+
+  if (done) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
+        <div className="text-5xl mb-4">✅</div>
+        <h2 className="text-xl font-bold text-slate-800">Denetim Kaydedildi</h2>
+        <p className="text-slate-500 mt-1 text-sm">{data.magazaAdi || "Mağaza"} — %{pct} dolduruldu</p>
+        <div className="flex gap-3 mt-6">
+          <button onClick={() => { setData({}); setDone(false); setOpen("genel"); }} className="px-5 py-3 rounded-xl bg-emerald-500 text-white text-sm font-semibold">Yeni Ziyaret</button>
+          <button onClick={() => setDone(false)} className="px-5 py-3 rounded-xl bg-white border border-slate-200 text-slate-700 text-sm font-semibold">Geri dön</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-100">
+      <header className="sticky top-0 z-10 bg-slate-900 text-white px-4 pt-4 pb-3 shadow-lg">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-base font-bold leading-tight">Carrefour Ziyaret Checklist</h1>
+            <p className="text-[11px] text-slate-400">Saha Denetim · Mobile-First</p>
+          </div>
+          <span className="text-2xl font-bold text-amber-400">%{pct}</span>
+        </div>
+        <div className="mt-2 h-2 bg-slate-700 rounded-full overflow-hidden">
+          <div className="h-full bg-amber-400 transition-all" style={{ width: `${pct}%` }} />
+        </div>
+      </header>
+
+      <main className="max-w-md mx-auto px-3 py-4 pb-28 space-y-2">
+        {SECTIONS.map((s) => {
+          const sp = sectionProgress(s);
+          const isOpen = open === s.id;
+          return (
+            <section key={s.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <button onClick={() => setOpen(isOpen ? "" : s.id)} className="w-full flex items-center justify-between px-4 py-4 active:bg-slate-50">
+                <span className="flex items-center gap-3">
+                  <span className="text-xl">{s.icon}</span>
+                  <span className="text-left">
+                    <span className="block text-sm font-bold text-slate-800">{s.title}</span>
+                    <span className="block text-[11px] text-slate-400">{sp.f}/{sp.t} tamamlandı</span>
+                  </span>
+                </span>
+                <span className="flex items-center gap-2">
+                  {sp.f === sp.t && sp.t > 0 && <span className="text-emerald-500 text-lg">✓</span>}
+                  <span className={`text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`}>▾</span>
+                </span>
+              </button>
+              {isOpen && (
+                <div className="px-4 pb-4 border-t border-slate-100">
+                  {s.note && <p className="text-[11px] text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-3">{s.note}</p>}
+                  {s.id === "foto" ? (
+                    <div className="grid grid-cols-3 gap-2 mt-3">
+                      {s.fields.map((f) => (<PhotoSlot key={f.key} value={data[f.key]} label={f.label} onChange={(v) => setVal(f.key, v)} />))}
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-slate-50">
+                      {s.fields.map((f) => f.type === "geo" ? (
+                        <div key={f.key} className="py-3">
+                          <label className="block text-sm font-medium text-slate-700 mb-2">{f.label}</label>
+                          <GeoCapture data={data} setVal={setVal} />
+                        </div>
+                      ) : (
+                        <Field key={f.key} field={f} value={data[f.key]} onChange={(v) => setVal(f.key, v)} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+          );
+        })}
+      </main>
+
+      <div className="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 max-w-md mx-auto">
+        {submitErr && (<p className="text-[11px] text-rose-600 bg-rose-50 px-4 py-2">{submitErr}</p>)}
+        <div className="px-4 py-3 flex gap-3">
+          <button onClick={exportJSON} disabled={submitting} className="px-4 py-3 rounded-xl bg-slate-100 text-slate-700 text-sm font-semibold disabled:opacity-50">Taslak</button>
+          <button onClick={submit} disabled={submitting} className="flex-1 py-3 rounded-xl bg-emerald-500 text-white text-sm font-bold active:bg-emerald-600 disabled:opacity-60">
+            {submitting ? "Gönderiliyor..." : "Denetimi Gönder"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<MagazaDenetimApp />);
+  </script>
+</body>
+</html>
