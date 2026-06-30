@@ -100,6 +100,10 @@
 var SUBMIT_URL="https://script.google.com/macros/s/AKfycbzyVd8avpnUTA02atCl4EmoXnp951nqcYv404_mOP7JQh_TqPScjGrA42RqvImf4FM/exec";
 var TOKEN="";
 
+var YEARS=[];for(var _y=2026;_y>=1980;_y--)YEARS.push(""+_y);
+var MUSTERI=["<100"];for(var _m=100;_m<1500;_m+=100)MUSTERI.push(_m+"-"+(_m+100));MUSTERI.push("1500+");
+var CIRO=["<50K","50-75K","75-100K","100-125K","125-150K","150-200K","200-250K","250-300K","300-400K","400-500K","500-600K","600-700K","700-800K","800-900K","900K-1M","1M-1.25M","1.25M-1.5M","1.5M+"];
+
 var SECTIONS=[
  {id:"genel",title:"Genel Bilgiler",icon:"🏪",fields:[
    {key:"magazaAdi",label:"Mağaza adı",type:"text",ph:"Örn. Carrefour Bağdat Cd."},
@@ -107,8 +111,8 @@ var SECTIONS=[
    {key:"geo",label:"Konum",type:"geo"},
    {key:"ilIlce",label:"İl / İlçe",type:"text",ph:"Konumdan otomatik / manuel"},
    {key:"ziyaretTipi",label:"Ziyaret tipi",type:"seg",opt:["Kendi noktamız","Rakip"]},
-   {key:"konsept",label:"Konsept",type:"sel",opt:["Hard-discount","Süpermarket","Hipermarket","Mahalle marketi","Premium / Gurme"]},
-   {key:"acilisYili",label:"Açılış yılı",type:"sel",opt:["<2000","2000-2010","2011-2018","2019-2023","2024+"]},
+   {key:"konsept",label:"Konsept",type:"sel",opt:["Hard-discount","Süpermarket","Hipermarket","Express / Mjet","Premium / Gurme","Franchise mağaza"]},
+   {key:"acilisYili",label:"Açılış yılı",type:"sel",opt:YEARS},
    {key:"renovasyon",label:"Son renovasyon",type:"sel",opt:["Hiç / Bilinmiyor","5+ yıl önce","Son 5 yıl","Son 1 yıl"]},
    {key:"toplamAlan",label:"Toplam alan (m²)",type:"seg",opt:["<150","150-400","400-1000","1000-2500","2500-4000","4000+"]},
    {key:"satisAlani",label:"Satış alanı (m²)",type:"seg",opt:["<150","150-400","400-1000","1000-2500","2500-4000","4000+"]},
@@ -116,7 +120,7 @@ var SECTIONS=[
    {key:"otopark",label:"Otopark",type:"tgl"},
    {key:"hizmetliReyonlar",label:"Hizmetli reyonlar",type:"chip",opt:["Açık şarküteri","Balık reyonu","Fırın (in-store)","Açık kuruyemiş","Kasap"]},
    {key:"donukDolapSayi",label:"Donuk dolap sayısı",type:"step",min:0,max:80},
-   {key:"donukDolapMetre",label:"Donuk dolap metresi",type:"seg",opt:["<5m","5-15m","15-30m","30-60m","60m+"]}
+   {key:"donukDolapMetre",label:"Donuk dolap metresi",type:"seg",opt:["<5m","5-15m","15-30m","30-45m","45-60m","60m+"]}
  ]},
  {id:"musteri",title:"Müşteri Profili",icon:"👥",fields:[
    {key:"gelir",label:"Gelir seviyesi",type:"seg",opt:["Düşük","Orta","Üst"]},
@@ -136,19 +140,18 @@ var SECTIONS=[
    {key:"onlineTeslimat",label:"Online teslimat",type:"tgl"}
  ]},
  {id:"performans",title:"Performans (Tahmini)",icon:"📊",note:"Rakip mağazalarda gözleme dayalı tahmini aralık seçin.",fields:[
-   {key:"gunlukMusteri",label:"Günlük müşteri",type:"sel",opt:["<500","500-1.500","1.500-3.000","3.000-6.000","6.000-10.000","10.000+"]},
-   {key:"gunlukFis",label:"Günlük fiş",type:"sel",opt:["<400","400-1.200","1.200-2.500","2.500-5.000","5.000-9.000","9.000+"]},
-   {key:"ortSepet",label:"Ortalama sepet (₺)",type:"sel",opt:["<150","150-300","300-600","600-1.000","1.000+"]},
-   {key:"gunlukCiro",label:"Günlük ciro (₺)",type:"sel",opt:["<50K","50-150K","150-400K","400K-1M","1M-3M","3M+"]},
-   {key:"yillikCiro",label:"Yıllık ciro (₺)",type:"sel",opt:["<20M","20-60M","60-150M","150-500M","500M-1Mr","1Mr+"]}
+   {key:"gunlukMusteri",label:"Günlük müşteri",type:"sel",opt:MUSTERI},
+   {key:"ortSepet",label:"Ortalama sepet (₺)",type:"sel",opt:["<200","200-300","300-400","400-500","500-750","750-1.000","1.000-1.250","1.250-1.500","1.500+"]},
+   {key:"gunlukCiro",label:"Günlük ciro (₺)",type:"sel",opt:CIRO}
  ]},
  {id:"fiyat",title:"Fiyat & Promosyon",icon:"🏷️",fields:[
    {key:"fiyatUyum",label:"Raf ↔ kasa fiyat uyumu",type:"seg",opt:["Uyumlu","Farklı","Bakılmadı"]},
    {key:"promosyon",label:"Aktif promosyon",type:"tgl"},
-   {key:"promoTipi",label:"Promosyon tipi",type:"sel",opt:["2 Al 1 Öde","% İndirim","Sepette indirim","Kart / App özel","Yok"]},
+   {key:"promoTipi",label:"Promosyon tipi (çoklu seçim)",type:"chip",opt:["2 Al 1 Öde","% İndirim","Sepette indirim","Kart / App özel","Yok"]},
    {key:"etiketDogruluk",label:"Etiket doğruluğu",type:"rate"}
  ]},
  {id:"alkolAlan",title:"Alkol Kategori Alanı",icon:"🍷",fields:[
+   {key:"alkolSatisAlani",label:"Alkol satış alanı (m²)",type:"sel",opt:["0-20","20-40","40-60","60-80","80-100","100-150","150-200","200-300","300+"]},
    {key:"kategoriAlani",label:"Toplam kategori alanı",type:"seg",opt:["Küçük","Orta","Geniş","Çok geniş"]},
    {key:"sogukAlan",label:"Soğuk alan",type:"tgl"},
    {key:"dolapSayisi",label:"Soğuk dolap sayısı",type:"step",min:0,max:60},
@@ -174,6 +177,7 @@ var SECTIONS=[
    {key:"tekel",label:"Tekel bayi",type:"tgl"},
    {key:"metro",label:"Metro",type:"tgl"},
    {key:"digerZincir",label:"Diğer zincirler",type:"tgl"},
+   {key:"digerZincirNot",label:"Diğer zincirler (hangileri?)",type:"text",ph:"Zincir adlarını yazın...",showIf:{key:"digerZincir",val:"Var"}},
    {key:"tehdit",label:"Genel tehdit skoru",type:"seg",opt:["Düşük","Orta","Yüksek"]}
  ]},
  {id:"foto",title:"Fotoğraflar",icon:"📸",note:"Dokun ve çek — opsiyonel.",fields:
@@ -236,16 +240,18 @@ function geoHTML(){
 }
 
 function secProgress(s){
-  var fs=s.fields.filter(function(f){return f.key.indexOf("f_")!==0&&f.type!=="geo"});
+  var fs=s.fields.filter(function(f){return f.key.indexOf("f_")!==0&&f.type!=="geo"&&!f.showIf});
   if(fs.length===0){var ph=s.fields.filter(function(f){return filled(data[f.key])}).length;return{f:ph,t:s.fields.length}}
   return{f:fs.filter(function(f){return filled(data[f.key])}).length,t:fs.length};
 }
-function totalProgress(){var t=0,fl=0;SECTIONS.forEach(function(s){s.fields.forEach(function(f){if(f.key.indexOf("f_")===0||f.type==="geo")return;t++;if(filled(data[f.key]))fl++})});return Math.round(fl/t*100)}
+function totalProgress(){var t=0,fl=0;SECTIONS.forEach(function(s){s.fields.forEach(function(f){if(f.key.indexOf("f_")===0||f.type==="geo"||f.showIf)return;t++;if(filled(data[f.key]))fl++})});return Math.round(fl/t*100)}
 
 function fieldHTML(f){
   if(f.type==="photo")return"";
-  return '<div class="field"><label>'+esc(f.label)+'</label><div class="ctl" id="ctl-'+f.key+'">'+ctlHTML(f)+'</div></div>';
+  var hid=f.showIf&&data[f.showIf.key]!==f.showIf.val;
+  return '<div class="field" id="field-'+f.key+'"'+(hid?' style="display:none"':'')+'><label>'+esc(f.label)+'</label><div class="ctl" id="ctl-'+f.key+'">'+ctlHTML(f)+'</div></div>';
 }
+function refreshConditionals(changedKey){for(var k in FIELDS){var f=FIELDS[k];if(f.showIf&&f.showIf.key===changedKey){var el=document.getElementById("field-"+f.key);if(el)el.style.display=(data[changedKey]===f.showIf.val)?"":"none"}}}
 function sectionHTML(s){
   var sp=secProgress(s),body="";
   if(s.note)body+='<p class="note">'+esc(s.note)+'</p>';
@@ -298,7 +304,7 @@ document.addEventListener("click",function(e){
     if("set"in b.dataset){data[key]=(f.type==="stars"?+b.dataset.set:b.dataset.set);}
     else if("chip"in b.dataset){var o=b.dataset.chip,a=Array.isArray(data[key])?data[key]:[];data[key]=a.indexOf(o)>-1?a.filter(function(x){return x!==o}):a.concat([o]);}
     else if("step"in b.dataset){var d=+b.dataset.step,cur=+(data[key]===undefined?(f.min||0):data[key]);data[key]=Math.max(f.min==null?0:f.min,Math.min(f.max==null?99:f.max,cur+d));}
-    rerenderCtl(key);refreshProgress();return;}
+    rerenderCtl(key);refreshConditionals(key);refreshProgress();return;}
 
   if(e.target.closest("#sendBtn")){submit();return;}
   if(e.target.closest("#draftBtn")){draft();return;}
